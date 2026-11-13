@@ -35,6 +35,74 @@
             background-color: #090b10;
             color: #f3f4f6;
             overflow-x: hidden;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+        /* Tema Claro (Light Mode Overrides) */
+        html:not(.dark) body {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        html:not(.dark) .bg-studio-950,
+        html:not(.dark) .bg-studio-950\/90 {
+            background-color: #f8fafc !important;
+        }
+        html:not(.dark) .bg-studio-900,
+        html:not(.dark) .bg-studio-900\/80 {
+            background-color: #ffffff !important;
+        }
+        html:not(.dark) .bg-studio-800 {
+            background-color: #e2e8f0 !important;
+        }
+        html:not(.dark) .hover\:bg-studio-700:hover {
+            background-color: #cbd5e1 !important;
+        }
+        html:not(.dark) .from-studio-900 {
+            --tw-gradient-from: #ffffff !important;
+            --tw-gradient-to: rgb(255 255 255 / 0) !important;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+        }
+        html:not(.dark) .via-studio-800 {
+            --tw-gradient-to: rgb(241 245 249 / 0) !important;
+            --tw-gradient-stops: var(--tw-gradient-from), #f1f5f9, var(--tw-gradient-to) !important;
+        }
+        html:not(.dark) .to-studio-900 {
+            --tw-gradient-to: #ffffff !important;
+        }
+        html:not(.dark) .border-slate-800,
+        html:not(.dark) .border-slate-800\/90,
+        html:not(.dark) .border-slate-800\/80,
+        html:not(.dark) .border-slate-800\/70,
+        html:not(.dark) .border-slate-700,
+        html:not(.dark) .border-slate-700\/80,
+        html:not(.dark) .border-slate-700\/60 {
+            border-color: #cbd5e1 !important;
+        }
+        html:not(.dark) .text-white:not(.bg-indigo-600 *):not(.bg-purple-600 *):not(.bg-blue-600 *) {
+            color: #0f172a !important;
+        }
+        html:not(.dark) .bg-indigo-600.text-white,
+        html:not(.dark) .bg-purple-600.text-white,
+        html:not(.dark) .bg-blue-600.text-white {
+            color: #ffffff !important;
+        }
+        html:not(.dark) .text-slate-200,
+        html:not(.dark) .text-slate-300 {
+            color: #334155 !important;
+        }
+        html:not(.dark) .text-slate-400 {
+            color: #475569 !important;
+        }
+        html:not(.dark) .text-amber-300 {
+            color: #b45309 !important;
+        }
+        html:not(.dark) .text-amber-400 {
+            color: #d97706 !important;
+        }
+        html:not(.dark) .text-indigo-400 {
+            color: #4f46e5 !important;
+        }
+        html:not(.dark) .text-purple-400 {
+            color: #7e22ce !important;
         }
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -98,8 +166,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                        CifraStudio <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">Pro</span>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-300 bg-clip-text text-transparent">
+                        CifraStudio <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/15 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 ml-1">Pro</span>
                     </h1>
                     <p class="text-xs text-slate-400">Dicionário Interativo de Acordes para Teclado & Violão</p>
                 </div>
@@ -128,6 +196,9 @@
                     <button onclick="playCurrentChord('arpeggio')" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-200 border border-slate-700 font-medium text-xs sm:text-sm transition-all active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
                         <span>Dedilhar</span>
+                    </button>
+                    <button onclick="toggleTheme()" id="theme-toggle-btn" title="Alternar Tema Claro / Escuro" class="w-9 h-9 flex items-center justify-center rounded-xl bg-studio-800 hover:bg-studio-700 border border-slate-700 text-base transition-all active:scale-95">
+                        ☀️
                     </button>
                 </div>
             </div>
@@ -548,7 +619,8 @@
             customNamePt: null,
             bassPitch: null,
             guitarVarIndex: 0,
-            viewMode: 'both'
+            viewMode: 'both',
+            theme: 'dark'
         };
 
         // Retorna os intervalos ativos ordenados
@@ -1431,16 +1503,17 @@
             const fretSpacing = gridH / numFrets;
 
             let svg = `<svg viewBox="0 0 ${width} ${height}" class="w-full h-auto">`;
+            const isLight = currentState.theme === 'light';
 
             if (startFret === 1) {
-                svg += `<rect x="${padLeft - 2}" y="${padTop - 6}" width="${gridW + 4}" height="7" rx="2" fill="#e2e8f0" />`;
+                svg += `<rect x="${padLeft - 2}" y="${padTop - 6}" width="${gridW + 4}" height="7" rx="2" fill="${isLight ? '#334155' : '#e2e8f0'}" />`;
             } else {
                 svg += `<text x="${padLeft - 14}" y="${padTop + fretSpacing / 2 + 5}" text-anchor="end" fill="#f59e0b" font-size="14" font-weight="800" font-family="JetBrains Mono">${startFret}ª</text>`;
             }
 
             for (let f = 0; f <= numFrets; f++) {
                 const y = padTop + f * fretSpacing;
-                svg += `<line x1="${padLeft}" y1="${y}" x2="${padLeft + gridW}" y2="${y}" stroke="#334155" stroke-width="${f === 0 ? 2 : 1.5}" />`;
+                svg += `<line x1="${padLeft}" y1="${y}" x2="${padLeft + gridW}" y2="${y}" stroke="${isLight ? '#cbd5e1' : '#334155'}" stroke-width="${f === 0 ? 2 : 1.5}" />`;
             }
 
             for (let s = 0; s < numStrings; s++) {
@@ -1450,7 +1523,7 @@
                 const isMuted = fret === -1;
 
                 svg += `<line id="guitar-str-${s}" class="guitar-string" x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + gridH}" 
-                        stroke="${isMuted ? '#334155' : '#94a3b8'}" stroke-width="${strokeW}" 
+                        stroke="${isMuted ? (isLight ? '#cbd5e1' : '#334155') : (isLight ? '#64748b' : '#94a3b8')}" stroke-width="${strokeW}" 
                         onclick="onGuitarStringClick(${s}, ${fret})" />`;
 
                 if (fret === -1) {
@@ -1521,7 +1594,7 @@
                     const noteName = noteArray[pitch];
                     svg += `
                     <text x="${x}" y="${padTop + gridH + 20}" text-anchor="middle" 
-                        fill="${isPrimaryRoot ? '#fbbf24' : (isTension ? '#c084fc' : '#e2e8f0')}" font-size="11.5" font-weight="700" font-family="JetBrains Mono">
+                        fill="${isPrimaryRoot ? (isLight ? '#d97706' : '#fbbf24') : (isTension ? (isLight ? '#7e22ce' : '#c084fc') : (isLight ? '#0f172a' : '#e2e8f0'))}" font-size="11.5" font-weight="700" font-family="JetBrains Mono">
                         ${noteName}
                     </text>
                     <text x="${x}" y="${padTop + gridH + 34}" text-anchor="middle" 
@@ -1801,6 +1874,21 @@
         function toggleFlatMode() {
             currentState.preferFlat = !currentState.preferFlat;
             updateAll(true);
+        }
+
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            const btn = document.getElementById('theme-toggle-btn');
+            if (currentState.theme === 'dark') {
+                currentState.theme = 'light';
+                htmlEl.classList.remove('dark');
+                btn.textContent = '🌙';
+            } else {
+                currentState.theme = 'dark';
+                htmlEl.classList.add('dark');
+                btn.textContent = '☀️';
+            }
+            renderGuitar();
         }
 
         function parseAndSetChord(chordStr) {
