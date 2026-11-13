@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CifraStudio Pro - Visualizador de Acordes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        studio: {
+                            950: '#090b10',
+                            900: '#11141d',
+                            800: '#1a1f2e',
+                            700: '#252b3f',
+                            accent: '#6366f1',
+                            root: '#f59e0b',
+                            note: '#3b82f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #090b10;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #11141d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #252b3f;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4464;
+        }
+        .piano-key-white {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+        }
+        .piano-key-white:active, .piano-key-white.playing {
+            transform: scaleY(0.98);
+        }
+        .piano-key-black {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+        }
+        .piano-key-black:active, .piano-key-black.playing {
+            transform: scaleY(0.97);
+        }
+        .guitar-string {
+            transition: stroke-width 0.1s ease, stroke 0.15s ease;
+        }
+        .guitar-string.vibrating {
+            animation: vibrate 0.12s infinite linear;
+        }
+        @keyframes vibrate {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-1.5px); }
+            50% { transform: translateX(0); }
+            75% { transform: translateX(1.5px); }
+            100% { transform: translateX(0); }
+        }
+        .glow-root {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.45);
+        }
+        .glow-note {
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.45);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header -->
+    <header class="border-b border-slate-800/80 bg-studio-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                        CifraStudio <span class="text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">Pro</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Dicionário Interativo de Acordes para Teclado & Violão</p>
+                </div>
+            </div>
+
+            <!-- View Switcher & Audio Controls -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div class="bg-studio-950 p-1 rounded-xl border border-slate-800 flex items-center">
+                    <button onclick="setViewMode('both')" id="view-both" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-indigo-600 text-white shadow">
+                        Ambos
+                    </button>
+                    <button onclick="setViewMode('piano')" id="view-piano" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white">
+                        🎹 Teclado
+                    </button>
+                    <button onclick="setViewMode('guitar')" id="view-guitar" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white">
+                        🎸 Violão
+                    </button>
+                </div>
+
+                <!-- Botões de Áudio -->
+                <div class="flex items-center gap-2">
+                    <button onclick="playCurrentChord('block')" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <span>Tocar Acorde</span>
+                    </button>
+                    <button onclick="playCurrentChord('arpeggio')" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-studio-800 hover:bg-studio-700 text-slate-200 border border-slate-700 font-medium text-xs sm:text-sm transition-all active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                        <span>Dedilhar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Search & Smart Selector Card -->
+        <section class="bg-studio-900 border border-slate-800/90 rounded-2xl p-4 sm:p-6 shadow-xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left: Smart Chord Input -->
+                <div class="lg:col-span-4 space-y-3">
+                    <label for="chord-input" class="block text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                        Digite qualquer cifra
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="chord-input" 
+                            placeholder="Ex: C7M(9), F#m7(11), G7(13), E7(#9), A6(9), C6/7..." 
+                            value="C7M(9)"
+                            autocomplete="off"
+                            class="w-full bg-studio-950 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-lg font-mono font-bold text-white placeholder-slate-600 focus:outline-none transition-all pr-28"
+                        >
+                        <span id="input-status" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                            Reconhecido
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Suporta 9ª, 11ª, 13ª, alterações (<code class="text-slate-300">b9, #9, #11, b13</code>), acordes compostos (<code class="text-slate-300">7(9/13), 6(9), 6/7</code>) e inversões (<code class="text-slate-300">/B, /G</code>).
+                    </p>
+                    <!-- Quick Examples -->
+                    <div class="pt-1 flex flex-wrap gap-1.5 items-center">
+                        <span class="text-xs text-slate-500 mr-1">Exemplos:</span>
+                        <button onclick="parseAndSetChord('C7M(9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">C7M(9)</button>
+                        <button onclick="parseAndSetChord('G7(13)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">G7(13)</button>
+                        <button onclick="parseAndSetChord('F#m7(11)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">F#m7(11)</button>
+                        <button onclick="parseAndSetChord('E7(#9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">E7(#9)</button>
+                        <button onclick="parseAndSetChord('A6(9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">A6(9)</button>
+                        <button onclick="parseAndSetChord('D7(9/13)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">D7(9/13)</button>
+                        <button onclick="parseAndSetChord('C6/7')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">C6/7</button>
+                        <button onclick="parseAndSetChord('Bm7(b5)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">Bm7(b5)</button>
+                    </div>
+                </div>
+
+                <!-- Right: Interactive Root & Quality Matrix -->
+                <div class="lg:col-span-8 space-y-4 border-t lg:border-t-0 lg:border-l border-slate-800 pt-4 lg:pt-0 lg:pl-6">
+                    <!-- Root Selector -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">1. Nota Fundamental (Tônica)</span>
+                            <button onclick="toggleFlatMode()" id="accidental-toggle" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+                                Alternar Bemóis (b) / Sustenidos (#)
+                            </button>
+                        </div>
+                        <div id="root-buttons" class="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Quality Selector Categorized -->
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Qualidade & Extensões Prontas</span>
+                            <div id="category-tabs" class="flex flex-wrap gap-1 bg-studio-950 p-1 rounded-lg border border-slate-800">
+                                <!-- Categorias preenchidas via JS -->
+                            </div>
+                        </div>
+                        <div id="quality-buttons" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Custom Modular Tension Builder -->
+                    <div class="bg-studio-950/90 border border-slate-800/90 rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                                <span>⚡ 3. Construtor de Cifras Compostas / Tensões Extras</span>
+                            </span>
+                            <button onclick="clearCustomTensions()" class="text-[11px] text-slate-400 hover:text-white underline">
+                                Limpar Tensões Extras
+                            </button>
+                        </div>
+                        <div id="tension-toggles" class="flex flex-wrap gap-1.5">
+                            <!-- Botões de toggle de intervalos extras via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Slash Bass Selector -->
+                    <div class="flex flex-wrap items-center gap-3 pt-1">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">4. Nota no Baixo (Inversão / Slash Chord):</span>
+                        <select id="bass-select" onchange="onBassChange(this.value)" class="bg-studio-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="">Sem inversão (Tônica no baixo)</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Chord Theory Info Bar -->
+        <section class="bg-gradient-to-r from-studio-900 via-studio-800 to-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <!-- Chord Reading & Formula -->
+                <div class="md:col-span-4">
+                    <span class="text-xs uppercase tracking-wider text-indigo-400 font-semibold">Nomenclatura Harmônica</span>
+                    <h2 id="display-fullname" class="text-base sm:text-lg font-bold text-white leading-snug mt-0.5">
+                        Dó Maior com Sétima Maior e Nona
+                    </h2>
+                    <p id="display-formula" class="text-xs text-slate-400 font-mono mt-1">
+                        Fórmula Intervalar: 1 - 3 - 5 - 7M - 9
+                    </p>
+                </div>
+
+                <!-- Notes Breakdown & Intervals -->
+                <div class="md:col-span-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t md:border-t-0 md:border-l border-slate-700/60 pt-3 md:pt-0 md:pl-6">
+                    <div class="w-full">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-2">
+                            Estrutura de Graus e Notas (Clique em uma nota para ouvir isoladamente)
+                        </span>
+                        <div id="notes-badges" class="flex flex-wrap gap-2">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Instruments Visualization Grid -->
+        <section id="instruments-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+            <!-- PIANO / KEYBOARD SECTION -->
+            <div id="piano-card" class="lg:col-span-7 bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-xl">🎹</span>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-white">Teclado / Piano (Voicing Estendido - 3 Oitavas)</h3>
+                                <p class="text-xs text-slate-400">Extensões (9ª, 11ª, 13ª) posicionadas na oitava superior real</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                                <span class="text-slate-300">Tônica / Baixo</span>
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                                <span class="text-slate-300">Tríade / 7ª</span>
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
+                                <span class="text-slate-300">Extensões (6, 9, 11, 13)</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Piano SVG Wrapper -->
+                    <div class="w-full overflow-x-auto pb-2">
+                        <div class="min-w-[640px] bg-studio-950 p-4 rounded-xl border border-slate-800 shadow-inner">
+                            <div class="h-2 w-full bg-gradient-to-r from-red-900 via-red-700 to-red-900 rounded-t-sm mb-0.5"></div>
+                            <div id="piano-container" class="w-full select-none">
+                                <!-- SVG do Piano Gerado via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Piano Voicing Info & Hand Position -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+                    <div id="piano-fingering-tip">
+                        💡 <strong class="text-slate-200">Voicing Profissional:</strong> Tônica grave na mão esquerda; terça, sétima e extensões (9ª, 11ª, 13ª) abertas na mão direita.
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="playCurrentChord('piano-block')" class="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition">
+                            <span>🔊 Tocar Acorde</span>
+                        </button>
+                        <button onclick="playCurrentChord('piano-arpeggio')" class="text-slate-300 hover:text-white font-medium flex items-center gap-1 transition">
+                            <span>🎶 Dedilhar Piano</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GUITAR / VIOLÃO SECTION -->
+            <div id="guitar-card" class="lg:col-span-5 bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-xl">🎸</span>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-white">Violão / Guitarra</h3>
+                                <p class="text-xs text-slate-400">Shapes de MPB, Bossa Nova, Jazz & CAGED</p>
+                            </div>
+                        </div>
+
+                        <!-- Variações de Posição no Braço -->
+                        <div class="flex items-center gap-1.5 bg-studio-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                            <button onclick="changeGuitarVariation(-1)" class="p-1 text-slate-400 hover:text-white transition" title="Posição Anterior">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <span id="guitar-variation-label" class="text-xs font-mono text-amber-400 px-1">
+                                Posição 1/3
+                            </span>
+                            <button onclick="changeGuitarVariation(1)" class="p-1 text-slate-400 hover:text-white transition" title="Próxima Posição">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Guitar SVG Chord Box & Legend -->
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center bg-studio-950 p-4 rounded-xl border border-slate-800">
+                        <!-- Chord Diagram SVG -->
+                        <div class="sm:col-span-7 flex justify-center">
+                            <div id="guitar-container" class="w-full max-w-[250px] select-none cursor-pointer">
+                                <!-- SVG do Violão Gerado via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Finger Legend & String Details -->
+                        <div class="sm:col-span-5 space-y-3 border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-4 text-xs">
+                            <div>
+                                <h4 class="font-semibold text-slate-200 uppercase tracking-wider text-[11px] mb-2">Cores & Dedos</h4>
+                                <ul class="space-y-1.5 text-slate-400">
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-4 h-4 rounded-full bg-amber-500 inline-block"></span>
+                                        <span>Tônica / Baixo</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-4 h-4 rounded-full bg-blue-600 inline-block"></span>
+                                        <span>3ª, 5ª e 7ª</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <span class="w-4 h-4 rounded-full bg-purple-600 inline-block"></span>
+                                        <span>Tensões (6, 9, 11, 13)</span>
+                                    </li>
+                                    <li class="pt-1 text-[11px] text-slate-400 leading-tight">
+                                        Números <strong class="text-white">1 a 4</strong> indicam os dedos (Indicador ao Mínimo).
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-800/80 space-y-1">
+                                <div class="text-[11px] text-slate-400" id="guitar-omission-note">
+                                    Em acordes de 11ª e 13ª no violão, a 5ª justa costuma ser omitida para priorizar as tensões.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Guitar Bar -->
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+                    <span>Afinação Padrão: <strong class="font-mono text-slate-200">E A D G B E</strong></span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="playCurrentChord('guitar-block')" class="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition">
+                            <span>🔊 Tocar Acorde (Batida)</span>
+                        </button>
+                        <button onclick="playCurrentChord('guitar-arpeggio')" class="text-slate-300 hover:text-white font-medium flex items-center gap-1 transition">
+                            <span>🎸 Dedilhar Violão</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/70 bg-studio-950 py-4 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>CifraStudio Pro • Motor Harmônico Completo (Tríades, Sétimas, 9ª, 11ª, 13ª, Alterados e Compostos)</p>
+            <p>Dica: Use o Construtor de Tensões Extras para combinar qualquer intervalo sobre o acorde.</p>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        /**************************************************************
+         * 1. TEORIA MUSICAL, GRAUS, EXTENSÕES E DICIONÁRIO EXPANDIDO
+         **************************************************************/
+        const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const NOTES_FLAT  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+        const SINGLE_NOTE_PT = {
+            'C': 'Dó', 'C#': 'Dó#', 'Db': 'Réb',
+            'D': 'Ré', 'D#': 'Ré#', 'Eb': 'Mib',
+            'E': 'Mi', 'F': 'Fá', 'F#': 'Fá#', 'Gb': 'Solb',
+            'G': 'Sol', 'G#': 'Sol#', 'Ab': 'Láb',
+            'A': 'Lá', 'A#': 'Lá#', 'Bb': 'Sib', 'B': 'Si'
+        };
+
+        // Mapa detalhado de cada semitom (incluindo oitava estendida até 21 semitons = 13ª Maior)
+        const INTERVAL_INFO = {
+            0:  { degree: '1',   short: '1',   name: 'Tônica (1ª)',        isTension: false },
+            2:  { degree: '2',   short: '2',   name: '2ª Maior',           isTension: true  },
+            3:  { degree: '3b',  short: '3b',  name: '3ª Menor',           isTension: false },
+            4:  { degree: '3',   short: '3',   name: '3ª Maior',           isTension: false },
+            5:  { degree: '4',   short: '4',   name: '4ª Justa',           isTension: true  },
+            6:  { degree: '5b',  short: 'b5',  name: '5ª Diminuta',        isTension: true  },
+            7:  { degree: '5',   short: '5',   name: '5ª Justa',           isTension: false },
+            8:  { degree: '#5',  short: '#5',  name: '5ª Aumentada',       isTension: true  },
+            9:  { degree: '6',   short: '6',   name: '6ª Maior / 7ª Dim',  isTension: true  },
+            10: { degree: '7',   short: '7',   name: '7ª Menor',           isTension: false },
+            11: { degree: '7M',  short: '7M',  name: '7ª Maior',           isTension: false },
+            13: { degree: 'b9',  short: 'b9',  name: '9ª Menor (b9)',      isTension: true  },
+            14: { degree: '9',   short: '9',   name: '9ª Maior (9)',       isTension: true  },
+            15: { degree: '#9',  short: '#9',  name: '9ª Aumentada (#9)',  isTension: true  },
+            17: { degree: '11',  short: '11',  name: '11ª Justa (11)',     isTension: true  },
+            18: { degree: '#11', short: '#11', name: '11ª Aumentada (#11)',isTension: true  },
+            20: { degree: 'b13', short: 'b13', name: '13ª Menor (b13)',    isTension: true  },
+            21: { degree: '13',  short: '13',  name: '13ª Maior (13)',     isTension: true  }
+        };
+
+        // Botões Modulares de Tensões Compostas (permitindo combinar 6, 7, 9, 11, 13, etc.)
+        const MODULAR_TENSIONS = [
+            { semitone: 9,  label: '+6',   code: '6'   },
+            { semitone: 10, label: '+7',   code: '7'   },
+            { semitone: 11, label: '+7M',  code: '7M'  },
+            { semitone: 13, label: '+b9',  code: 'b9'  },
+            { semitone: 14, label: '+9',   code: '9'   },
+            { semitone: 15, label: '+#9',  code: '#9'  },
+            { semitone: 17, label: '+11',  code: '11'  },
+            { semitone: 18, label: '+#11', code: '#11' },
+            { semitone: 20, label: '+b13', code: 'b13' },
+            { semitone: 21, label: '+13',  code: '13'  },
+            { semitone: 6,  label: 'b5',   code: 'b5'  },
+            { semitone: 8,  label: '#5',   code: '#5'  }
+        ];
+
+        const CATEGORIES = [
+            { id: 'all',     label: 'Todos' },
+            { id: 'triads',  label: 'Tríades & Sus' },
+            { id: '6and7',   label: '6ª, 7ª & Compostos' },
+            { id: '9th',     label: 'Nonas (9)' },
+            { id: '11th',    label: '11ª (11 / #11)' },
+            { id: '13th',    label: '13ª & Alterados' }
+        ];
+
+        // Dicionário Completo de Qualidades e Extensões
+        const CHORD_QUALITIES = [
+            // Tríades e Básicos
+            { id: '',          cat: 'triads', label: 'Maior',       suffix: '',          namePt: 'Maior',                              intervals: [0, 4, 7] },
+            { id: 'm',         cat: 'triads', label: 'm',           suffix: 'm',         namePt: 'Menor',                              intervals: [0, 3, 7] },
+            { id: 'sus4',      cat: 'triads', label: 'sus4',        suffix: 'sus4',      namePt: 'Suspenso na 4ª',                     intervals: [0, 5, 7] },
+            { id: 'sus2',      cat: 'triads', label: 'sus2',        suffix: 'sus2',      namePt: 'Suspenso na 2ª',                     intervals: [0, 2, 7] },
+            { id: 'dim',       cat: 'triads', label: 'dim (tríade)',suffix: 'dim',       namePt: 'Diminuto',                           intervals: [0, 3, 6] },
+            { id: 'aug',       cat: 'triads', label: 'aug (#5)',    suffix: 'aug',       namePt: 'Aumentado',                          intervals: [0, 4, 8] },
+            { id: '5',         cat: 'triads', label: '5 (Power)',   suffix: '5',         namePt: 'Power Chord (Quinta)',               intervals: [0, 7] },
+
+            // Sextas, Sétimas e Compostos 6/7
+            { id: '6',         cat: '6and7',  label: '6',           suffix: '6',         namePt: 'Maior com 6ª',                       intervals: [0, 4, 7, 9] },
+            { id: 'm6',        cat: '6and7',  label: 'm6',          suffix: 'm6',        namePt: 'Menor com 6ª',                       intervals: [0, 3, 7, 9] },
+            { id: '7',         cat: '6and7',  label: '7',           suffix: '7',         namePt: 'Dominante (7ª Menor)',               intervals: [0, 4, 7, 10] },
+            { id: '7M',        cat: '6and7',  label: '7M (maj7)',   suffix: '7M',        namePt: 'Maior com 7ª Maior',                 intervals: [0, 4, 7, 11] },
+            { id: 'm7',        cat: '6and7',  label: 'm7',          suffix: 'm7',        namePt: 'Menor com 7ª',                       intervals: [0, 3, 7, 10] },
+            { id: 'm7M',       cat: '6and7',  label: 'm7M',         suffix: 'm7M',       namePt: 'Menor com 7ª Maior',                 intervals: [0, 3, 7, 11] },
+            { id: 'm7b5',      cat: '6and7',  label: 'm7(b5) / Ø',  suffix: 'm7(b5)',    namePt: 'Meio-Diminuto',                      intervals: [0, 3, 6, 10] },
+            { id: 'dim7',      cat: '6and7',  label: 'dim7 / °',    suffix: 'dim7',      namePt: 'Diminuto com 7ª Diminuta',           intervals: [0, 3, 6, 9] },
+            { id: '7sus4',     cat: '6and7',  label: '7sus4 (7/4)', suffix: '7sus4',     namePt: 'Com 7ª e 4ª Suspensa',               intervals: [0, 5, 7, 10] },
+            { id: '6/7',       cat: '6and7',  label: '6/7',         suffix: '6/7',       namePt: 'Com 6ª e 7ª Menor',                  intervals: [0, 4, 7, 9, 10] },
+            { id: '7M(6)',     cat: '6and7',  label: '7M(6) / 6/7M',suffix: '7M(6)',     namePt: 'Com 6ª e 7ª Maior',                  intervals: [0, 4, 7, 9, 11] },
+            { id: '7(#5)',     cat: '6and7',  label: '7(#5)',       suffix: '7(#5)',     namePt: 'Dominante com 5ª Aumentada',         intervals: [0, 4, 8, 10] },
+            { id: '7(b5)',     cat: '6and7',  label: '7(b5)',       suffix: '7(b5)',     namePt: 'Dominante com 5ª Diminuta',          intervals: [0, 4, 6, 10] },
+
+            // Nonas (9)
+            { id: 'add9',      cat: '9th',    label: 'add9',        suffix: 'add9',      namePt: 'Maior com 9ª Adicionada',            intervals: [0, 4, 7, 14] },
+            { id: 'm(add9)',   cat: '9th',    label: 'm(add9)',     suffix: 'm(add9)',   namePt: 'Menor com 9ª Adicionada',            intervals: [0, 3, 7, 14] },
+            { id: '6(9)',      cat: '9th',    label: '6(9) / 6/9',  suffix: '6(9)',      namePt: 'Maior com 6ª e 9ª',                  intervals: [0, 4, 7, 9, 14] },
+            { id: 'm6(9)',     cat: '9th',    label: 'm6(9)',       suffix: 'm6(9)',     namePt: 'Menor com 6ª e 9ª',                  intervals: [0, 3, 7, 9, 14] },
+            { id: '7(9)',      cat: '9th',    label: '7(9) / 9',    suffix: '7(9)',      namePt: 'Dominante com 9ª',                   intervals: [0, 4, 7, 10, 14] },
+            { id: '7M(9)',     cat: '9th',    label: '7M(9) / maj9',suffix: '7M(9)',     namePt: 'Com 7ª Maior e 9ª',                  intervals: [0, 4, 7, 11, 14] },
+            { id: 'm7(9)',     cat: '9th',    label: 'm7(9) / m9',  suffix: 'm7(9)',     namePt: 'Menor com 7ª e 9ª',                  intervals: [0, 3, 7, 10, 14] },
+            { id: 'm7M(9)',    cat: '9th',    label: 'm7M(9)',      suffix: 'm7M(9)',    namePt: 'Menor com 7ª Maior e 9ª',            intervals: [0, 3, 7, 11, 14] },
+            { id: '7sus4(9)',  cat: '9th',    label: '7(4/9)',      suffix: '7(4/9)',    namePt: 'Com 7ª, 4ª e 9ª',                    intervals: [0, 5, 7, 10, 14] },
+            { id: '7(b9)',     cat: '9th',    label: '7(b9)',       suffix: '7(b9)',     namePt: 'Dominante com 9ª Menor',             intervals: [0, 4, 7, 10, 13] },
+            { id: '7(#9)',     cat: '9th',    label: '7(#9)',       suffix: '7(#9)',     namePt: 'Dominante com 9ª Aumentada',         intervals: [0, 4, 7, 10, 15] },
+
+            // Décimas Primeiras (11 e #11)
+            { id: '11',        cat: '11th',   label: '11 (9/11)',   suffix: '11',        namePt: 'Dominante com 11ª',                  intervals: [0, 7, 10, 14, 17] },
+            { id: '7(11)',     cat: '11th',   label: '7(11)',       suffix: '7(11)',     namePt: 'Com 7ª e 11ª',                       intervals: [0, 4, 7, 10, 17] },
+            { id: 'm7(11)',    cat: '11th',   label: 'm7(11) / m11',suffix: 'm7(11)',    namePt: 'Menor com 7ª e 11ª',                 intervals: [0, 3, 7, 10, 17] },
+            { id: 'm7(9/11)',  cat: '11th',   label: 'm7(9/11)',    suffix: 'm7(9/11)',  namePt: 'Menor com 7ª, 9ª e 11ª',             intervals: [0, 3, 7, 10, 14, 17] },
+            { id: '7(#11)',    cat: '11th',   label: '7(#11)',      suffix: '7(#11)',    namePt: 'Dominante com 11ª Aumentada',        intervals: [0, 4, 7, 10, 18] },
+            { id: '7M(#11)',   cat: '11th',   label: '7M(#11)',     suffix: '7M(#11)',   namePt: 'Com 7ª Maior e 11ª Aumentada',       intervals: [0, 4, 7, 11, 18] },
+            { id: '7(9/#11)',  cat: '11th',   label: '7(9/#11)',    suffix: '7(9/#11)',  namePt: 'Com 7ª, 9ª e 11ª Aumentada',         intervals: [0, 4, 7, 10, 14, 18] },
+            { id: '7M(9/#11)', cat: '11th',   label: '7M(9/#11)',   suffix: '7M(9/#11)', namePt: 'Com 7ª Maior, 9ª e 11ª Aumentada',   intervals: [0, 4, 7, 11, 14, 18] },
+
+            // Décimas Terceiras (13, b13 e Compostas)
+            { id: '7(13)',     cat: '13th',   label: '7(13)',       suffix: '7(13)',     namePt: 'Dominante com 13ª',                  intervals: [0, 4, 7, 10, 21] },
+            { id: '7(9/13)',   cat: '13th',   label: '7(9/13) / 13',suffix: '7(9/13)',   namePt: 'Dominante com 9ª e 13ª',             intervals: [0, 4, 7, 10, 14, 21] },
+            { id: '7M(13)',    cat: '13th',   label: '7M(13)',      suffix: '7M(13)',    namePt: 'Com 7ª Maior e 13ª',                 intervals: [0, 4, 7, 11, 21] },
+            { id: '7M(9/13)',  cat: '13th',   label: '7M(9/13)',    suffix: '7M(9/13)',  namePt: 'Com 7ª Maior, 9ª e 13ª',             intervals: [0, 4, 7, 11, 14, 21] },
+            { id: 'm7(13)',    cat: '13th',   label: 'm7(13)',      suffix: 'm7(13)',    namePt: 'Menor com 7ª e 13ª',                 intervals: [0, 3, 7, 10, 21] },
+            { id: 'm7(9/13)',  cat: '13th',   label: 'm7(9/13) / m13',suffix:'m7(9/13)', namePt: 'Menor com 7ª, 9ª e 13ª',             intervals: [0, 3, 7, 10, 14, 21] },
+            { id: '7sus4(13)', cat: '13th',   label: '7(4/13)',     suffix: '7(4/13)',   namePt: 'Com 7ª, 4ª e 13ª',                   intervals: [0, 5, 7, 10, 21] },
+            { id: '7(b13)',    cat: '13th',   label: '7(b13)',      suffix: '7(b13)',    namePt: 'Dominante com 13ª Menor',            intervals: [0, 4, 7, 10, 20] },
+            { id: '7(b9/13)',  cat: '13th',   label: '7(b9/13)',    suffix: '7(b9/13)',  namePt: 'Com 7ª, 9ª Menor e 13ª',             intervals: [0, 4, 7, 10, 13, 21] },
+            { id: '7(b9/b13)', cat: '13th',   label: '7(b9/b13)',   suffix: '7(b9/b13)', namePt: 'Dominante Alterado (b9/b13)',        intervals: [0, 4, 7, 10, 13, 20] },
+            { id: '7(#9/b13)', cat: '13th',   label: '7(#9/b13)',   suffix: '7(#9/b13)', namePt: 'Dominante Alterado (#9/b13)',        intervals: [0, 4, 7, 10, 15, 20] },
+            { id: '7(#11/13)', cat: '13th',   label: '7(#11/13)',   suffix: '7(#11/13)', namePt: 'Dominante Lídio (#11/13)',           intervals: [0, 4, 7, 10, 18, 21] }
+        ];
+
+        // Estado Global da Aplicação
+        let currentState = {
+            rootPitch: 0,
+            preferFlat: false,
+            qualityId: '7M(9)',
+            activeCategory: 'all',
+            customIntervals: [0, 4, 7, 11, 14], // Intervalos ativos reais (suporta modo customizado)
+            customSuffix: null,                 // Se o usuário montou ou digitou uma cifra composta customizada
+            customNamePt: null,
+            bassPitch: null,
+            guitarVarIndex: 0,
+            viewMode: 'both'
+        };
+
+        // Retorna os intervalos ativos ordenados
+        function getCurrentIntervals() {
+            return [...currentState.customIntervals].sort((a, b) => a - b);
+        }
+
+        // Reconstrói o sufixo e o nome em português a partir de qualquer conjunto de intervalos
+        function describeIntervals(intervals) {
+            const sorted = [...new Set(intervals)].sort((a, b) => a - b);
+            // Verifica se bate exatamente com alguma qualidade do dicionário
+            const exactMatch = CHORD_QUALITIES.find(q =>
+                q.intervals.length === sorted.length &&
+                q.intervals.every((val, idx) => val === sorted[idx])
+            );
+            if (exactMatch) {
+                return {
+                    qualityId: exactMatch.id,
+                    suffix: exactMatch.suffix,
+                    namePt: exactMatch.namePt,
+                    formula: sorted.map(i => INTERVAL_INFO[i] ? INTERVAL_INFO[i].degree : i).join(' - ')
+                };
+            }
+
+            // Construção dinâmica de cifra composta caso não esteja pré-cadastrada
+            const hasMin3 = sorted.includes(3);
+            const hasMaj3 = sorted.includes(4);
+            const hasSus4 = sorted.includes(5) && !hasMin3 && !hasMaj3;
+            const hasSus2 = sorted.includes(2) && !hasMin3 && !hasMaj3;
+            const hasb5   = sorted.includes(6);
+            const hasSharp5 = sorted.includes(8);
+            const has6    = sorted.includes(9);
+            const has7    = sorted.includes(10);
+            const has7M   = sorted.includes(11);
+
+            let baseSuffix = '';
+            let baseName = 'Maior';
+            if (hasMin3) { baseSuffix = 'm'; baseName = 'Menor'; }
+            else if (hasSus4) { baseSuffix = 'sus4'; baseName = 'Suspenso na 4ª'; }
+            else if (hasSus2) { baseSuffix = 'sus2'; baseName = 'Suspenso na 2ª'; }
+
+            if (has7M) { baseSuffix += '7M'; baseName += ' com 7ª Maior'; }
+            else if (has7) { baseSuffix += '7'; baseName += ' com 7ª'; }
+            else if (has6) { baseSuffix += '6'; baseName += ' com 6ª'; }
+
+            const tensions = [];
+            if (has6 && (has7 || has7M)) tensions.push('6');
+            if (hasb5) tensions.push('b5');
+            if (hasSharp5) tensions.push('#5');
+            if (sorted.includes(13)) tensions.push('b9');
+            if (sorted.includes(14)) tensions.push('9');
+            if (sorted.includes(15)) tensions.push('#9');
+            if (sorted.includes(17)) tensions.push('11');
+            if (sorted.includes(18)) tensions.push('#11');
+            if (sorted.includes(20)) tensions.push('b13');
+            if (sorted.includes(21)) tensions.push('13');
+
+            if (tensions.length > 0) {
+                baseSuffix += `(${tensions.join('/')})`;
+                baseName += ` (${tensions.join(', ')})`;
+            }
+
+            return {
+                qualityId: '__custom__',
+                suffix: baseSuffix,
+                namePt: baseName,
+                formula: sorted.map(i => INTERVAL_INFO[i] ? INTERVAL_INFO[i].degree : i).join(' - ')
+            };
+        }
+
+        /**************************************************************
+         * 2. VOICINGS DE VIOLÃO (SHAPES MPB/JAZZ + GERADOR ALGORÍTMICO)
+         **************************************************************/
+        const GUITAR_TUNING_MIDI = [40, 45, 50, 55, 59, 64]; // E2 A2 D3 G3 B3 E4
+
+        // Formas móveis precisas (incluindo Bossa Nova / Jazz para 9ª, 11ª, 13ª e Compostos)
+        // baseRootString: 0 (6ª corda Mi) ou 1 (5ª corda Lá)
+        const MOVABLE_SHAPES = {
+            '': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 2, 1, 0, 0], fingers: [1, 3, 4, 2, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 1, 2, 3, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            'm': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 2, 0, 0, 0], fingers: [1, 3, 4, 1, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 1, 0], fingers: [0, 1, 3, 4, 2, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '7': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 0, 1, 0, 0], fingers: [1, 3, 1, 2, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 1, 3, 1, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '7M': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 1, 0, -1], fingers: [1, 0, 3, 4, 2, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 1, 2, 0], fingers: [0, 1, 3, 2, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            'm7': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 0, 0, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 1, 0], fingers: [0, 1, 3, 1, 2, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            'm7M': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 0, 0, -1], fingers: [1, 0, 4, 2, 3, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 1, 1, 0], fingers: [0, 1, 4, 2, 3, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '6': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 2, 1, 2, -1], fingers: [1, 0, 3, 2, 4, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 2, 2], fingers: [0, 1, 3, 3, 3, 3], barre: { from: 3, to: 6, fret: 2 } }
+            ],
+            'm6': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 2, 0, 2, -1], fingers: [1, 0, 3, 1, 4, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, -1, 1, 2], fingers: [0, 1, 3, 0, 2, 4], barre: null }
+            ],
+            '6/7': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 3, frets: [-1, 3, 2, 2, 1, -1], fingers: [0, 4, 2, 3, 1, 0], barre: null }
+            ],
+            '7M(6)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 1, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null }
+            ],
+            '6(9)': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 1, 1, 1], fingers: [0, 2, 1, 3, 3, 3], barre: { from: 4, to: 6, fret: 1 } },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, 0, 0, 0, 1, 1], fingers: [2, 0, 1, 1, 3, 4], barre: null }
+            ],
+            'm6(9)': [
+                { baseRootString: 1, baseRootFret: 2, frets: [-1, 2, 1, 1, 2, -1], fingers: [0, 3, 1, 2, 4, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 1, 0, 1, -1], fingers: [1, 0, 2, 0, 3, 0], barre: null }
+            ],
+            '7(9)': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 1, 1, -1], fingers: [0, 2, 1, 3, 4, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 0, 1, 0, 2], fingers: [1, 3, 1, 2, 1, 4], barre: { from: 1, to: 6, fret: 0 } }
+            ],
+            '7M(9)': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 2, 1, -1], fingers: [0, 2, 1, 4, 3, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 2, 1, 1, -1], fingers: [1, 0, 4, 2, 3, 0], barre: null }
+            ],
+            'm7(9)': [
+                { baseRootString: 1, baseRootFret: 2, frets: [-1, 2, 0, 2, 2, -1], fingers: [0, 2, 1, 3, 4, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 0, 0, 0, 2], fingers: [1, 3, 1, 1, 1, 4], barre: { from: 1, to: 6, fret: 0 } }
+            ],
+            '7(b9)': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 1, 0, -1], fingers: [0, 2, 1, 3, 0, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 0, 1, 0, -1], fingers: [2, 0, 1, 3, 1, 0], barre: null }
+            ],
+            '7(#9)': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 1, 2, -1], fingers: [0, 2, 1, 3, 4, 0], barre: null }
+            ],
+            '11': [
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 0, 0, 0, 0], fingers: [0, 1, 1, 1, 1, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 2, 0, 0], fingers: [1, 0, 2, 4, 1, 1], barre: null }
+            ],
+            '7(11)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 0, 0], fingers: [1, 0, 2, 3, 4, 4], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 0, 0, 2, 1], fingers: [0, 1, 1, 1, 4, 2], barre: { from: 2, to: 4, fret: 0 } }
+            ],
+            'm7(11)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 0, 0, 0], fingers: [1, 0, 2, 3, 4, 4], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 0, 0, 1, 0], fingers: [0, 1, 1, 1, 2, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            'm7(9/11)': [
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 0, 0, 1, 2], fingers: [0, 1, 1, 1, 2, 4], barre: { from: 2, to: 4, fret: 0 } }
+            ],
+            '7(#11)': [
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 1, 2, 0, -1], fingers: [1, 0, 2, 3, 0, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 2, 0, 2, 0], fingers: [0, 1, 3, 0, 4, 0], barre: null }
+            ],
+            '7M(#11)': [
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 2, 2, 0, -1], fingers: [1, 0, 3, 4, 0, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 1, 2, 4], fingers: [0, 1, 2, 1, 3, 4], barre: null }
+            ],
+            '7(13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 2, 2], fingers: [0, 1, 2, 1, 3, 4], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '7(9/13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 2, 2], fingers: [1, 0, 1, 2, 3, 4], barre: null },
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 0, 1, 1, 3], fingers: [0, 2, 1, 3, 3, 4], barre: null }
+            ],
+            '7M(13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 1, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null }
+            ],
+            '7M(9/13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 1, 2, 2], fingers: [1, 0, 2, 2, 3, 4], barre: null }
+            ],
+            'm7(13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 0, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null }
+            ],
+            'm7(9/13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 0, 2, 2], fingers: [1, 0, 2, 2, 3, 4], barre: null }
+            ],
+            '7(b13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 1, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null }
+            ],
+            '7(b9/b13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 1, 1], fingers: [1, 0, 2, 3, 4, 4], barre: null }
+            ],
+            '7(#9/b13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 1, 1, 3], fingers: [1, 0, 1, 2, 3, 4], barre: null }
+            ],
+            'm7b5': [
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 1, 0, 1, -1], fingers: [0, 1, 3, 2, 4, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 1, 1, 0, -1], fingers: [2, 0, 3, 4, 1, 0], barre: null }
+            ],
+            'dim7': [
+                { baseRootString: 1, baseRootFret: 1, frets: [-1, 1, 2, 0, 2, -1], fingers: [0, 1, 3, 0, 4, 0], barre: null },
+                { baseRootString: 0, baseRootFret: 1, frets: [1, -1, 0, 1, 0, -1], fingers: [2, 0, 1, 3, 1, 0], barre: null }
+            ],
+            '7sus4': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 0, 2, 0, 0], fingers: [1, 3, 1, 4, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 3, 0], fingers: [0, 1, 2, 1, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '7sus4(9)': [
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 0, 0, 0, 0], fingers: [0, 1, 1, 1, 1, 1], barre: { from: 2, to: 6, fret: 0 } }
+            ],
+            '7sus4(13)': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 2, 2, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null }
+            ],
+            '5': [
+                { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 2, -1, -1, -1], fingers: [1, 3, 4, 0, 0, 0], barre: null },
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, -1, -1], fingers: [0, 1, 3, 4, 0, 0], barre: null }
+            ]
+        };
+
+        // Gerador Algorítmico de Voicings para Violão (garante que qualquer cifra composta tenha posições reais no braço)
+        function generateAlgorithmicGuitarVoicings(rootPitch, intervals, bassPitch) {
+            const targetPitchClasses = intervals.map(i => (rootPitch + i) % 12);
+            const primaryBass = bassPitch !== null ? bassPitch : rootPitch;
+            const generated = [];
+
+            // Testa janelas de 4 casas ao longo do braço (Casa 0, Casa 2, Casa 5, Casa 7)
+            [0, 2, 4, 7].forEach((windowStart) => {
+                const frets = [-1, -1, -1, -1, -1, -1];
+                const fingers = [0, 0, 0, 0, 0, 0];
+
+                // 1. Encontra a nota do baixo na 6ª ou 5ª corda dentro da janela
+                let bassString = 0;
+                let foundBass = false;
+                for (let s = 0; s <= 1; s++) {
+                    for (let f = windowStart; f <= windowStart + 4; f++) {
+                        if ((GUITAR_TUNING_MIDI[s] + f) % 12 === primaryBass) {
+                            frets[s] = f;
+                            bassString = s;
+                            foundBass = true;
+                            break;
+                        }
+                    }
+                    if (foundBass) break;
+                }
+                if (!foundBass) return;
+
+                // 2. Preenche as cordas 4, 3, 2 e 1 priorizando terça, sétima e tensões (9, 11, 13, 6)
+                for (let s = bassString + 1; s < 6; s++) {
+                    if (s === 1 && bassString === 0 && intervals.length >= 4) {
+                        // Em acordes de 4+ notas com baixo na 6ª corda (estilo Bossa/Jazz), muta a 5ª corda para clareza
+                        frets[1] = -1;
+                        continue;
+                    }
+                    let bestFret = -1;
+                    for (let f = Math.max(0, windowStart); f <= windowStart + 3; f++) {
+                        const p = (GUITAR_TUNING_MIDI[s] + f) % 12;
+                        if (targetPitchClasses.includes(p)) {
+                            bestFret = f;
+                            // Prioriza notas que sejam extensões nas cordas agudas (2ª e 1ª corda)
+                            const isExtension = intervals.some(intv => intv >= 9 && (rootPitch + intv) % 12 === p);
+                            if (s >= 3 && isExtension) break;
+                        }
+                    }
+                    frets[s] = bestFret;
+                }
+
+                // Atribui dedos aproximados ordenados pela casa
+                const activeFrets = frets.filter(f => f > 0);
+                if (activeFrets.length >= 3) {
+                    const minF = Math.min(...activeFrets);
+                    frets.forEach((f, idx) => {
+                        if (f > 0) {
+                            fingers[idx] = Math.min(4, Math.max(1, f - minF + 1));
+                        }
+                    });
+                    generated.push({
+                        frets,
+                        fingers,
+                        barre: null,
+                        label: windowStart === 0 ? 'Voicing na Região Aberta' : `Voicing na ${minF}ª Casa`
+                    });
+                }
+            });
+
+            return generated;
+        }
+
+        function getGuitarShapesForChord(rootPitch, qualityId, bassPitch) {
+            const results = [];
+            const intervals = getCurrentIntervals();
+
+            // 1. Procura nos templates móveis (MPB/Jazz/CAGED)
+            const templates = MOVABLE_SHAPES[qualityId];
+            if (templates) {
+                templates.forEach((tpl) => {
+                    const stringOpenPitch = GUITAR_TUNING_MIDI[tpl.baseRootString] % 12;
+                    let shift = (rootPitch - stringOpenPitch + 12) % 12;
+                    let targetFret = shift - tpl.baseRootFret;
+                    if (targetFret < 0) targetFret += 12;
+
+                    if (targetFret >= 0 && targetFret <= 11) {
+                        const newFrets = tpl.frets.map(f => (f === -1 ? -1 : f + targetFret));
+                        const newFingers = targetFret === 0 && tpl.baseRootFret === 0
+                            ? tpl.frets.map((f, i) => (f <= 0 ? 0 : tpl.fingers[i]))
+                            : [...tpl.fingers];
+
+                        let newBarre = null;
+                        if (tpl.barre && (targetFret + tpl.barre.fret) > 0) {
+                            newBarre = {
+                                from: tpl.barre.from,
+                                to: tpl.barre.to,
+                                fret: tpl.barre.fret + targetFret
+                            };
+                        }
+
+                        // Ajusta o baixo se houver Slash Chord
+                        if (bassPitch !== null && bassPitch !== rootPitch) {
+                            for (let s = 0; s <= 1; s++) {
+                                const openP = GUITAR_TUNING_MIDI[s] % 12;
+                                const bFret = (bassPitch - openP + 12) % 12;
+                                if (Math.abs(bFret - Math.max(1, targetFret)) <= 3) {
+                                    newFrets[s] = bFret;
+                                    if (s === 1) newFrets[0] = -1;
+                                    break;
+                                }
+                            }
+                        }
+
+                        const minPositive = Math.min(...newFrets.filter(f => f > 0), 1);
+                        results.push({
+                            frets: newFrets,
+                            fingers: newFingers,
+                            barre: newBarre,
+                            label: targetFret === 0 ? 'Posição Padrão / Aberta' : `Posição na ${minPositive}ª Casa (CAGED/MPB)`
+                        });
+                    }
+                });
+            }
+
+            // 2. Complementa com voicings algorítmicos (garante cobertura total para cifras compostas customizadas)
+            const algoShapes = generateAlgorithmicGuitarVoicings(rootPitch, intervals, bassPitch);
+            algoShapes.forEach(s => {
+                const isDup = results.some(r => r.frets.join(',') === s.frets.join(','));
+                if (!isDup) results.push(s);
+            });
+
+            if (results.length === 0) {
+                results.push({ frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0], barre: null, label: 'Posição Base' });
+            }
+
+            return results;
+        }
+
+        /**************************************************************
+         * 3. PARSER UNIVERSAL DE CIFRAS (INCLUINDO COMPOSTAS E 9, 11, 13)
+         **************************************************************/
+        function parseChordString(input) {
+            if (!input || !input.trim()) return null;
+            let str = input.trim().replace(/\s+/g, '');
+
+            // 1. Extrai Nota Fundamental (C, F#, Bb, etc.)
+            const rootMatch = str.match(/^([A-Ga-g])([#b♯♭]?)(.*)$/);
+            if (!rootMatch) return null;
+
+            const rootLetter = rootMatch[1].toUpperCase();
+            const rootAcc = rootMatch[2].replace('♯', '#').replace('♭', 'b');
+            let rest = rootMatch[3];
+
+            const rootNoteStr = rootLetter + rootAcc;
+            let rootPitch = NOTES_SHARP.indexOf(rootNoteStr);
+            let preferFlat = false;
+            if (rootPitch === -1) {
+                rootPitch = NOTES_FLAT.indexOf(rootNoteStr);
+                if (rootPitch !== -1) preferFlat = true;
+            }
+            if (rootPitch === -1) return null;
+
+            // 2. Extrai Baixo Invertido no final se for uma Nota Musical (ex: /G, /F#, /Bb)
+            // Cuidado para não confundir /9 ou /7 (cifras como C6/9 ou C6/7) com nota de baixo!
+            let bassPitch = null;
+            const slashBassMatch = rest.match(/^(.*)\/([A-Ga-g][#b♯♭]?)$/);
+            if (slashBassMatch) {
+                rest = slashBassMatch[1];
+                const rawBass = slashBassMatch[2].charAt(0).toUpperCase() + slashBassMatch[2].slice(1).replace('♯', '#').replace('♭', 'b');
+                bassPitch = NOTES_SHARP.indexOf(rawBass);
+                if (bassPitch === -1) {
+                    bassPitch = NOTES_FLAT.indexOf(rawBass);
+                    if (bassPitch !== -1) preferFlat = true;
+                }
+                if (bassPitch === -1) return null;
+            }
+
+            // 3. Verifica primeiro se o sufixo corresponde diretamente ou por alias ao dicionário
+            const aliasMap = {
+                '': '', 'M': '', 'maj': '',
+                'm': 'm', 'min': 'm', '-': 'm',
+                'sus4': 'sus4', '4': 'sus4', 'sus': 'sus4',
+                'sus2': 'sus2', '2': 'sus2',
+                '5': '5',
+                'dim': 'dim',
+                'dim7': 'dim7', '°': 'dim7', 'o': 'dim7',
+                'aug': 'aug', '+': 'aug', '#5': 'aug', '5+': 'aug', '+5': 'aug',
+                '6': '6', 'M6': '6',
+                'm6': 'm6', 'min6': 'm6',
+                '7': '7', 'dom7': '7',
+                '7M': '7M', 'maj7': '7M', 'M7': '7M', '7+': '7M', 'Δ': '7M',
+                'm7': 'm7', 'min7': 'm7', '-7': 'm7',
+                'm7M': 'm7M', 'm(maj7)': 'm7M', 'm7+': 'm7M',
+                'm7(b5)': 'm7b5', 'm7b5': 'm7b5', 'ø': 'm7b5', 'Ø': 'm7b5',
+                '7sus4': '7sus4', '7(4)': '7sus4', '7/4': '7sus4',
+                '6/7': '6/7', '7(6)': '6/7', '6(7)': '6/7',
+                '7M(6)': '7M(6)', '6/7M': '7M(6)', '7M/6': '7M(6)',
+                '7(#5)': '7(#5)', '7+5': '7(#5)', '+7': '7(#5)',
+                '7(b5)': '7(b5)', '7-5': '7(b5)',
+                'add9': 'add9', '(9)': 'add9', 'add2': 'add9',
+                'm(add9)': 'm(add9)', 'madd9': 'm(add9)',
+                '6(9)': '6(9)', '6/9': '6(9)', '69': '6(9)',
+                'm6(9)': 'm6(9)', 'm6/9': 'm6(9)',
+                '9': '7(9)', '7(9)': '7(9)', '7/9': '7(9)',
+                '7M(9)': '7M(9)', 'maj9': '7M(9)', 'M9': '7M(9)', '7M/9': '7M(9)',
+                'm9': 'm7(9)', 'm7(9)': 'm7(9)', 'm7/9': 'm7(9)',
+                'm7M(9)': 'm7M(9)',
+                '7(4/9)': '7sus4(9)', '7sus4(9)': '7sus4(9)', '9sus4': '7sus4(9)',
+                '7(b9)': '7(b9)', '7b9': '7(b9)', '7(-9)': '7(b9)',
+                '7(#9)': '7(#9)', '7#9': '7(#9)', '7(+9)': '7(#9)',
+                '11': '11', '9(11)': '11', '7(9/11)': '11',
+                '7(11)': '7(11)', '7/11': '7(11)',
+                'm11': 'm7(11)', 'm7(11)': 'm7(11)', 'm7/11': 'm7(11)',
+                'm7(9/11)': 'm7(9/11)', 'm9(11)': 'm7(9/11)',
+                '7(#11)': '7(#11)', '7#11': '7(#11)', '7(+11)': '7(#11)',
+                '7M(#11)': '7M(#11)', 'maj7(#11)': '7M(#11)', '7M(+11)': '7M(#11)',
+                '7(9/#11)': '7(9/#11)', '9(#11)': '7(9/#11)',
+                '7M(9/#11)': '7M(9/#11)', 'maj9(#11)': '7M(9/#11)',
+                '7(13)': '7(13)', '7/13': '7(13)',
+                '13': '7(9/13)', '7(9/13)': '7(9/13)', '9(13)': '7(9/13)',
+                '7M(13)': '7M(13)', 'maj7(13)': '7M(13)', '7M/13': '7M(13)',
+                '7M(9/13)': '7M(9/13)', 'maj13': '7M(9/13)',
+                'm7(13)': 'm7(13)', 'm7/13': 'm7(13)',
+                'm13': 'm7(9/13)', 'm7(9/13)': 'm7(9/13)',
+                '7(4/13)': '7sus4(13)', '7sus4(13)': '7sus4(13)', '13sus4': '7sus4(13)',
+                '7(b13)': '7(b13)', '7b13': '7(b13)', '7(-13)': '7(b13)',
+                '7(b9/13)': '7(b9/13)', '13(b9)': '7(b9/13)',
+                '7(b9/b13)': '7(b9/b13)',
+                '7(#9/b13)': '7(#9/b13)',
+                '7(#11/13)': '7(#11/13)', '13(#11)': '7(#11/13)'
+            };
+
+            if (rest in aliasMap) {
+                const qId = aliasMap[rest];
+                const qObj = CHORD_QUALITIES.find(q => q.id === qId);
+                return {
+                    rootPitch,
+                    preferFlat,
+                    qualityId: qId,
+                    intervals: [...qObj.intervals],
+                    bassPitch
+                };
+            }
+
+            // 4. Parser Modular Genérico para qualquer combinação de 6, 7, 7M, 9, b9, #9, 11, #11, 13, b13
+            let intervals = new Set([0, 4, 7]);
+            let working = rest;
+
+            // Detecta menor / diminuto / aumentado / sus na base
+            if (/^(m7M|m\(maj7\)|mM7)/.test(working)) {
+                intervals = new Set([0, 3, 7, 11]);
+                working = working.replace(/^(m7M|m\(maj7\)|mM7)/, '');
+            } else if (/^(m|min|-)/.test(working)) {
+                intervals.delete(4);
+                intervals.add(3);
+                working = working.replace(/^(m|min|-)/, '');
+            } else if (/^(dim7|°|o)/.test(working)) {
+                intervals = new Set([0, 3, 6, 9]);
+                working = working.replace(/^(dim7|°|o)/, '');
+            } else if (/^(dim)/.test(working)) {
+                intervals = new Set([0, 3, 6]);
+                working = working.replace(/^(dim)/, '');
+            } else if (/^(aug|\+)/.test(working)) {
+                intervals = new Set([0, 4, 8]);
+                working = working.replace(/^(aug|\+)/, '');
+            }
+
+            // Sétima Maior (7M, maj7, M7, 7+)
+            if (/(7M|maj7|M7|7\+|Δ)/.test(working)) {
+                intervals.add(11);
+                working = working.replace(/(7M|maj7|M7|7\+|Δ)/g, ' ');
+            }
+            // Sexta
+            if (/(^|[\/\(\s])6($|[\/\(\)\s])/.test(working) || working.startsWith('6')) {
+                intervals.add(9);
+                working = working.replace(/6/g, ' ');
+            }
+            // Sétima Menor
+            if (/7/.test(working)) {
+                intervals.add(10);
+                working = working.replace(/7/g, ' ');
+            }
+            // Atalhos de 13, 11, 9 isolados na base
+            if (/^13/.test(working)) {
+                intervals.add(10); intervals.add(14); intervals.add(21);
+                working = working.replace(/^13/, ' ');
+            } else if (/^11/.test(working)) {
+                intervals.add(10); intervals.add(14); intervals.add(17);
+                working = working.replace(/^11/, ' ');
+            } else if (/^9/.test(working)) {
+                intervals.add(10); intervals.add(14);
+                working = working.replace(/^9/, ' ');
+            }
+
+            // Extrai tokens de tensões separados por parênteses, barras ou vírgulas
+            const tokens = working.split(/[\(\)\/,;\s]+/).filter(Boolean);
+            for (const tk of tokens) {
+                if (tk === 'sus4' || tk === '4' || tk === 'sus') {
+                    intervals.delete(3); intervals.delete(4); intervals.add(5);
+                } else if (tk === 'sus2' || tk === '2') {
+                    intervals.delete(3); intervals.delete(4); intervals.add(2);
+                } else if (tk === 'b5' || tk === '-5' || tk === '5b') {
+                    intervals.delete(7); intervals.add(6);
+                } else if (tk === '#5' || tk === '+5' || tk === '5+' || tk === '5#') {
+                    intervals.delete(7); intervals.add(8);
+                } else if (tk === '6') {
+                    intervals.add(9);
+                } else if (tk === '7') {
+                    intervals.add(10);
+                } else if (tk === '7M' || tk === 'maj7') {
+                    intervals.add(11);
+                } else if (tk === 'b9' || tk === '-9' || tk === '9b' || tk === '9-') {
+                    intervals.add(13);
+                } else if (tk === '9' || tk === 'add9') {
+                    intervals.add(14);
+                } else if (tk === '#9' || tk === '+9' || tk === '9+' || tk === '9#') {
+                    intervals.add(15);
+                } else if (tk === '11' || tk === 'add11') {
+                    intervals.add(17);
+                } else if (tk === '#11' || tk === '+11' || tk === '11+' || tk === '11#') {
+                    intervals.add(18);
+                } else if (tk === 'b13' || tk === '-13' || tk === '13b' || tk === '13-') {
+                    intervals.add(20);
+                } else if (tk === '13' || tk === 'add13') {
+                    intervals.add(21);
+                } else {
+                    return null; // Token desconhecido
+                }
+            }
+
+            const finalIntervals = [...intervals].sort((a, b) => a - b);
+            const desc = describeIntervals(finalIntervals);
+
+            return {
+                rootPitch,
+                preferFlat,
+                qualityId: desc.qualityId,
+                intervals: finalIntervals,
+                bassPitch
+            };
+        }
+
+        /**************************************************************
+         * 4. SÍNTESE DE ÁUDIO REALISTA (WEB AUDIO API)
+         **************************************************************/
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        // Toca uma única nota com síntese rica (timbre de Piano ou Violão)
+        function playTone(midiNote, instrument = 'piano', delay = 0, duration = 1.8) {
+            initAudio();
+            const now = audioCtx.currentTime + delay;
+            const freq = midiToFreq(midiNote);
+
+            const masterGain = audioCtx.createGain();
+            masterGain.connect(audioCtx.destination);
+
+            if (instrument === 'guitar') {
+                // Timbre de corda dedilhada (Plucked String c/ filtro passa-baixa dinâmico)
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc1.type = 'sawtooth';
+                osc2.type = 'triangle';
+                osc1.frequency.setValueAtTime(freq, now);
+                osc2.frequency.setValueAtTime(freq * 2, now); // Harmônico de oitava
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(freq * 6, now);
+                filter.frequency.exponentialRampToValueAtTime(freq * 1.2, now + 0.6);
+
+                const osc2Gain = audioCtx.createGain();
+                osc2Gain.gain.setValueAtTime(0.18, now);
+
+                masterGain.gain.setValueAtTime(0.001, now);
+                masterGain.gain.linearRampToValueAtTime(0.24, now + 0.015);
+                masterGain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+                osc1.connect(filter);
+                osc2.connect(osc2Gain);
+                osc2Gain.connect(filter);
+                filter.connect(masterGain);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration);
+                osc2.stop(now + duration);
+            } else {
+                // Timbre de Piano Elétrico/Acústico Suave
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                osc1.type = 'triangle';
+                osc2.type = 'sine';
+
+                osc1.frequency.setValueAtTime(freq, now);
+                osc2.frequency.setValueAtTime(freq * 2, now);
+
+                const harmGain = audioCtx.createGain();
+                harmGain.gain.setValueAtTime(0.12, now);
+                harmGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+                masterGain.gain.setValueAtTime(0.001, now);
+                masterGain.gain.linearRampToValueAtTime(0.28, now + 0.02);
+                masterGain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+                osc1.connect(masterGain);
+                osc2.connect(harmGain);
+                harmGain.connect(masterGain);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration);
+                osc2.stop(now + duration);
+            }
+        }
+
+        function playCurrentChord(mode = 'block') {
+            const intervals = getCurrentIntervals();
+
+            // Se o modo global for 'block' ou 'arpeggio', respeita a visualização ativa (se estiver em 'guitar', usa o violão)
+            let resolvedMode = mode;
+            if (mode === 'block') {
+                resolvedMode = currentState.viewMode === 'guitar' ? 'guitar-block' : 'piano-block';
+            } else if (mode === 'arpeggio') {
+                resolvedMode = currentState.viewMode === 'guitar' ? 'guitar-arpeggio' : 'piano-arpeggio';
+            } else if (mode === 'guitar') {
+                resolvedMode = 'guitar-arpeggio';
+            } else if (mode === 'piano') {
+                resolvedMode = 'piano-block';
+            }
+
+            if (resolvedMode === 'guitar-block' || resolvedMode === 'guitar-arpeggio') {
+                const shapes = getGuitarShapesForChord(currentState.rootPitch, currentState.qualityId, currentState.bassPitch);
+                const shape = shapes[currentState.guitarVarIndex] || shapes[0];
+                // Em 'guitar-block' faz uma batida rápida natural (18ms entre cordas); em 'guitar-arpeggio' dedilha (75ms)
+                const strummingStep = resolvedMode === 'guitar-block' ? 0.018 : 0.075;
+                let step = 0;
+                shape.frets.forEach((fret, stringIdx) => {
+                    if (fret !== -1) {
+                        const midi = GUITAR_TUNING_MIDI[stringIdx] + fret;
+                        playTone(midi, 'guitar', step * strummingStep, 2.3);
+                        animateGuitarString(stringIdx, step * (strummingStep * 1000));
+                        step++;
+                    }
+                });
+                return;
+            }
+
+            const pianoMidis = getActivePianoMidis(currentState.rootPitch, intervals, currentState.bassPitch);
+            pianoMidis.forEach((item, index) => {
+                const delay = (resolvedMode === 'piano-arpeggio') ? index * 0.085 : 0;
+                playTone(item.midi, 'piano', delay, 2.0);
+                setTimeout(() => highlightKeyTemp(item.midi), delay * 1000);
+            });
+        }
+
+        /**************************************************************
+         * 5. CONSTRUÇÃO DO TECLADO / PIANO DE 3 OITAVAS (COM EXTENSÕES)
+         **************************************************************/
+        // De C3 (MIDI 48) a B5 (MIDI 83) -> 3 Oitavas Completas (36 teclas)
+        const PIANO_START_MIDI = 48; // C3
+        const PIANO_END_MIDI = 83;   // B5
+
+        function getActivePianoMidis(rootPitch, intervals, bassPitch) {
+            const list = [];
+            if (bassPitch !== null && bassPitch !== rootPitch) {
+                const bassMidi = 48 + bassPitch;
+                list.push({ midi: bassMidi, isRoot: true, isBass: true, isTension: false, degree: 'Baixo' });
+            }
+
+            // C3 = 48, C4 = 60 (Garante sempre múltiplos exatos de oitava a partir de Dó = 0)
+            let baseRootMidi = 48 + rootPitch;
+            const maxInterval = intervals.length ? Math.max(...intervals) : 7;
+
+            // Usa a oitava central (C4 = 60) quando todas as extensões cabem dentro do teclado (até B5 = 83)
+            if ((bassPitch === null || bassPitch === rootPitch) && (60 + rootPitch + maxInterval <= PIANO_END_MIDI)) {
+                baseRootMidi = 60 + rootPitch;
+            } else if (bassPitch !== null && bassPitch !== rootPitch && (48 + bassPitch >= baseRootMidi) && (baseRootMidi + 12 + maxInterval <= PIANO_END_MIDI)) {
+                baseRootMidi += 12;
+            }
+
+            intervals.forEach((intv, idx) => {
+                const midi = baseRootMidi + intv;
+                const info = INTERVAL_INFO[intv] || { short: '', isTension: intv > 11 };
+                list.push({
+                    midi,
+                    isRoot: idx === 0 && (bassPitch === null || bassPitch === rootPitch),
+                    isBass: false,
+                    isTension: info.isTension,
+                    degree: info.short
+                });
+            });
+
+            return list.sort((a, b) => a.midi - b.midi);
+        }
+
+        function renderPiano() {
+            const container = document.getElementById('piano-container');
+            const intervals = getCurrentIntervals();
+            const activeMidis = getActivePianoMidis(currentState.rootPitch, intervals, currentState.bassPitch);
+            const activeMap = new Map();
+            activeMidis.forEach(item => activeMap.set(item.midi, item));
+
+            const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
+
+            const whiteKeys = [];
+            const blackKeys = [];
+            const isBlackPitch = [false, true, false, true, false, false, true, false, true, false, true, false];
+
+            let whiteIndex = 0;
+            for (let midi = PIANO_START_MIDI; midi <= PIANO_END_MIDI; midi++) {
+                const pitch = midi % 12;
+                if (!isBlackPitch[pitch]) {
+                    whiteKeys.push({ midi, pitch, whiteIndex });
+                    whiteIndex++;
+                } else {
+                    blackKeys.push({ midi, pitch, prevWhiteIndex: whiteIndex - 1 });
+                }
+            }
+
+            const keyW = 38;
+            const keyH = 192;
+            const blackW = 24;
+            const blackH = 118;
+            const totalW = whiteKeys.length * keyW;
+
+            let svg = `<svg viewBox="0 0 ${totalW} ${keyH}" class="w-full h-auto drop-shadow-md">`;
+
+            // Teclas Brancas
+            whiteKeys.forEach(k => {
+                const x = k.whiteIndex * keyW;
+                const active = activeMap.get(k.midi);
+                const noteLabel = noteArray[k.pitch];
+
+                let fill = '#f8fafc';
+                let badgeColor = '';
+
+                if (active) {
+                    if (active.isRoot) {
+                        fill = '#fef3c7';
+                        badgeColor = '#f59e0b';
+                    } else if (active.isTension) {
+                        fill = '#f3e8ff';
+                        badgeColor = '#9333ea';
+                    } else {
+                        fill = '#dbeafe';
+                        badgeColor = '#2563eb';
+                    }
+                }
+
+                svg += `
+                <g class="piano-key-white cursor-pointer" data-midi="${k.midi}" onclick="onPianoKeyClick(${k.midi})">
+                    <rect x="${x + 1}" y="0" width="${keyW - 2}" height="${keyH - 2}" rx="5" 
+                        fill="${fill}" stroke="#1e293b" stroke-width="1.5" />
+                    ${active ? `
+                        <rect x="${x + 4}" y="${keyH - 52}" width="${keyW - 8}" height="42" rx="6" fill="${badgeColor}" />
+                        <text x="${x + keyW / 2}" y="${keyH - 32}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="800" font-family="JetBrains Mono">${noteLabel}</text>
+                        <text x="${x + keyW / 2}" y="${keyH - 17}" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="9.5" font-weight="700" font-family="Inter">${active.degree}</text>
+                    ` : `
+                        <text x="${x + keyW / 2}" y="${keyH - 12}" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500" font-family="Inter">${noteLabel}</text>
+                    `}
+                </g>`;
+            });
+
+            // Teclas Pretas
+            blackKeys.forEach(k => {
+                const x = (k.prevWhiteIndex + 1) * keyW - (blackW / 2);
+                const active = activeMap.get(k.midi);
+                const noteLabel = noteArray[k.pitch];
+
+                let fill = '#0f172a';
+                let stroke = '#334155';
+                if (active) {
+                    if (active.isRoot) {
+                        fill = '#f59e0b';
+                        stroke = '#fde68a';
+                    } else if (active.isTension) {
+                        fill = '#9333ea';
+                        stroke = '#d8b4fe';
+                    } else {
+                        fill = '#2563eb';
+                        stroke = '#93c5fd';
+                    }
+                }
+
+                svg += `
+                <g class="piano-key-black cursor-pointer" data-midi="${k.midi}" onclick="onPianoKeyClick(${k.midi})">
+                    <rect x="${x}" y="0" width="${blackW}" height="${blackH}" rx="4" 
+                        fill="${fill}" stroke="${stroke}" stroke-width="1.5" />
+                    <rect x="${x + 3}" y="2" width="${blackW - 6}" height="${blackH - 12}" rx="2" 
+                        fill="${active ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)'}" />
+                    ${active ? `
+                        <text x="${x + blackW / 2}" y="${blackH - 24}" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="800" font-family="JetBrains Mono">${noteLabel}</text>
+                        <text x="${x + blackW / 2}" y="${blackH - 11}" text-anchor="middle" fill="#fde68a" font-size="8.5" font-weight="700" font-family="Inter">${active.degree}</text>
+                    ` : ''}
+                </g>`;
+            });
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function onPianoKeyClick(midi) {
+            playTone(midi, 'piano', 0, 1.5);
+            highlightKeyTemp(midi);
+        }
+
+        function highlightKeyTemp(midi) {
+            const keyEl = document.querySelector(`[data-midi="${midi}"]`);
+            if (keyEl) {
+                keyEl.classList.add('playing');
+                setTimeout(() => keyEl.classList.remove('playing'), 180);
+            }
+        }
+
+        /**************************************************************
+         * 6. CONSTRUÇÃO DO DIAGRAMA DE VIOLÃO INTERATIVO (SVG)
+         **************************************************************/
+        function renderGuitar() {
+            const container = document.getElementById('guitar-container');
+            const varLabel = document.getElementById('guitar-variation-label');
+            const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
+            const intervals = getCurrentIntervals();
+
+            const shapes = getGuitarShapesForChord(currentState.rootPitch, currentState.qualityId, currentState.bassPitch);
+            if (currentState.guitarVarIndex >= shapes.length) {
+                currentState.guitarVarIndex = 0;
+            }
+            const shape = shapes[currentState.guitarVarIndex];
+            varLabel.textContent = `Posição ${currentState.guitarVarIndex + 1}/${shapes.length}`;
+
+            const playedFrets = shape.frets.filter(f => f > 0);
+            const maxFret = playedFrets.length ? Math.max(...playedFrets) : 4;
+            const minFret = playedFrets.length ? Math.min(...playedFrets) : 1;
+
+            let startFret = 1;
+            if (maxFret > 5) {
+                startFret = minFret;
+            }
+
+            const width = 235;
+            const height = 298;
+            const padLeft = 42;
+            const padTop = 44;
+            const gridW = 152;
+            const gridH = 190;
+            const numStrings = 6;
+            const numFrets = 5;
+            const stringSpacing = gridW / (numStrings - 1);
+            const fretSpacing = gridH / numFrets;
+
+            let svg = `<svg viewBox="0 0 ${width} ${height}" class="w-full h-auto">`;
+
+            if (startFret === 1) {
+                svg += `<rect x="${padLeft - 2}" y="${padTop - 6}" width="${gridW + 4}" height="7" rx="2" fill="#e2e8f0" />`;
+            } else {
+                svg += `<text x="${padLeft - 14}" y="${padTop + fretSpacing / 2 + 5}" text-anchor="end" fill="#f59e0b" font-size="14" font-weight="800" font-family="JetBrains Mono">${startFret}ª</text>`;
+            }
+
+            for (let f = 0; f <= numFrets; f++) {
+                const y = padTop + f * fretSpacing;
+                svg += `<line x1="${padLeft}" y1="${y}" x2="${padLeft + gridW}" y2="${y}" stroke="#334155" stroke-width="${f === 0 ? 2 : 1.5}" />`;
+            }
+
+            for (let s = 0; s < numStrings; s++) {
+                const x = padLeft + s * stringSpacing;
+                const strokeW = 2.6 - s * 0.32;
+                const fret = shape.frets[s];
+                const isMuted = fret === -1;
+
+                svg += `<line id="guitar-str-${s}" class="guitar-string" x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + gridH}" 
+                        stroke="${isMuted ? '#334155' : '#94a3b8'}" stroke-width="${strokeW}" 
+                        onclick="onGuitarStringClick(${s}, ${fret})" />`;
+
+                if (fret === -1) {
+                    svg += `<text x="${x}" y="${padTop - 15}" text-anchor="middle" fill="#f43f5e" font-size="14" font-weight="800" font-family="JetBrains Mono">✕</text>`;
+                } else if (fret === 0) {
+                    const openPitch = GUITAR_TUNING_MIDI[s] % 12;
+                    const isRoot = openPitch === (currentState.bassPitch ?? currentState.rootPitch);
+                    svg += `<circle cx="${x}" cy="${padTop - 20}" r="7" fill="${isRoot ? '#f59e0b' : 'none'}" stroke="${isRoot ? '#f59e0b' : '#10b981'}" stroke-width="2" />`;
+                }
+            }
+
+            if (shape.barre) {
+                const barreFretRel = shape.barre.fret - startFret + 1;
+                if (barreFretRel >= 1 && barreFretRel <= numFrets) {
+                    const xStart = padLeft + (shape.barre.from - 1) * stringSpacing;
+                    const xEnd = padLeft + (shape.barre.to - 1) * stringSpacing;
+                    const yCenter = padTop + (barreFretRel - 0.5) * fretSpacing;
+
+                    svg += `
+                    <rect x="${xStart - 10}" y="${yCenter - 11}" width="${xEnd - xStart + 20}" height="22" rx="11" 
+                        fill="#2563eb" fill-opacity="0.85" stroke="#93c5fd" stroke-width="1.5" />`;
+                }
+            }
+
+            for (let s = 0; s < numStrings; s++) {
+                const fret = shape.frets[s];
+                const finger = shape.fingers[s];
+                const x = padLeft + s * stringSpacing;
+
+                if (fret !== -1) {
+                    const midi = GUITAR_TUNING_MIDI[s] + fret;
+                    const pitch = midi % 12;
+                    const semitoneFromRoot = (pitch - currentState.rootPitch + 12) % 12;
+
+                    // Identifica se esta nota corresponde a uma extensão (6, 9, 11, 13, b5, #5)
+                    const matchingInterval = intervals.find(i => (i % 12) === semitoneFromRoot);
+                    const info = matchingInterval !== undefined ? INTERVAL_INFO[matchingInterval] : null;
+                    const isTension = info ? info.isTension : false;
+                    const degreeLabel = info ? info.short : '';
+
+                    const isPrimaryRoot = pitch === currentState.rootPitch;
+                    const isBassRoot = currentState.bassPitch !== null && pitch === currentState.bassPitch;
+
+                    if (fret > 0) {
+                        const relFret = fret - startFret + 1;
+                        if (relFret >= 1 && relFret <= numFrets) {
+                            const y = padTop + (relFret - 0.5) * fretSpacing;
+                            let dotFill = '#2563eb';
+                            let dotStroke = '#93c5fd';
+                            if (isPrimaryRoot || isBassRoot) {
+                                dotFill = '#f59e0b';
+                                dotStroke = '#fde68a';
+                            } else if (isTension) {
+                                dotFill = '#9333ea';
+                                dotStroke = '#d8b4fe';
+                            }
+
+                            svg += `
+                            <g onclick="onGuitarStringClick(${s}, ${fret})" class="cursor-pointer">
+                                <circle cx="${x}" cy="${y}" r="12" fill="${dotFill}" stroke="${dotStroke}" stroke-width="1.5" />
+                                <text x="${x}" y="${y + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="800" font-family="Inter">
+                                    ${finger > 0 ? finger : ''}
+                                </text>
+                            </g>`;
+                        }
+                    }
+
+                    const noteName = noteArray[pitch];
+                    svg += `
+                    <text x="${x}" y="${padTop + gridH + 20}" text-anchor="middle" 
+                        fill="${isPrimaryRoot ? '#fbbf24' : (isTension ? '#c084fc' : '#e2e8f0')}" font-size="11.5" font-weight="700" font-family="JetBrains Mono">
+                        ${noteName}
+                    </text>
+                    <text x="${x}" y="${padTop + gridH + 34}" text-anchor="middle" 
+                        fill="#64748b" font-size="9.5" font-weight="600" font-family="Inter">
+                        ${degreeLabel}
+                    </text>`;
+                } else {
+                    svg += `
+                    <text x="${x}" y="${padTop + gridH + 20}" text-anchor="middle" 
+                        fill="#475569" font-size="11" font-family="JetBrains Mono">-</text>`;
+                }
+            }
+
+            svg += `<text x="${padLeft + gridW / 2}" y="${height - 5}" text-anchor="middle" fill="#64748b" font-size="10.5" font-weight="500" font-family="Inter">${shape.label}</text>`;
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function onGuitarStringClick(stringIdx, fret) {
+            if (fret === -1) return;
+            const midi = GUITAR_TUNING_MIDI[stringIdx] + fret;
+            playTone(midi, 'guitar', 0, 2.0);
+            animateGuitarString(stringIdx, 0);
+        }
+
+        function animateGuitarString(stringIdx, delayMs = 0) {
+            setTimeout(() => {
+                const strEl = document.getElementById(`guitar-str-${stringIdx}`);
+                if (strEl) {
+                    strEl.classList.add('vibrating');
+                    strEl.setAttribute('stroke', '#f59e0b');
+                    setTimeout(() => {
+                        strEl.classList.remove('vibrating');
+                        strEl.setAttribute('stroke', '#94a3b8');
+                    }, 450);
+                }
+            }, delayMs);
+        }
+
+        function changeGuitarVariation(delta) {
+            const shapes = getGuitarShapesForChord(currentState.rootPitch, currentState.qualityId, currentState.bassPitch);
+            currentState.guitarVarIndex = (currentState.guitarVarIndex + delta + shapes.length) % shapes.length;
+            renderGuitar();
+            playCurrentChord('guitar-block');
+        }
+
+        /**************************************************************
+         * 7. ATUALIZAÇÃO DA INTERFACE, CATEGORIAS E TENSÕES MODULARES
+         **************************************************************/
+        function renderControls() {
+            const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
+            const activeIntervals = getCurrentIntervals();
+
+            // 1. Botões de Nota Raiz
+            const rootContainer = document.getElementById('root-buttons');
+            rootContainer.innerHTML = noteArray.map((note, pitch) => {
+                const active = pitch === currentState.rootPitch;
+                return `
+                <button onclick="selectRoot(${pitch})" 
+                    class="py-2 px-1 rounded-xl font-mono font-bold text-sm transition-all border ${
+                        active 
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/25 scale-105' 
+                        : 'bg-studio-950 text-slate-300 border-slate-800 hover:border-slate-600 hover:text-white'
+                    }">
+                    ${note}
+                </button>`;
+            }).join('');
+
+            // 1.5 Abas de Categoria de Qualidades
+            const catContainer = document.getElementById('category-tabs');
+            catContainer.innerHTML = CATEGORIES.map(cat => {
+                const active = cat.id === currentState.activeCategory;
+                return `
+                <button onclick="selectCategory('${cat.id}')"
+                    class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                        active ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                    }">
+                    ${cat.label}
+                </button>`;
+            }).join('');
+
+            // 2. Botões de Qualidade filtrados por categoria
+            const qualityContainer = document.getElementById('quality-buttons');
+            const filteredQualities = currentState.activeCategory === 'all'
+                ? CHORD_QUALITIES
+                : CHORD_QUALITIES.filter(q => q.cat === currentState.activeCategory);
+
+            qualityContainer.innerHTML = filteredQualities.map(q => {
+                const active = q.id === currentState.qualityId;
+                return `
+                <button onclick="selectQuality('${q.id}')" 
+                    class="px-2.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all border ${
+                        active 
+                        ? 'bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-500/25' 
+                        : 'bg-studio-950 text-slate-300 border-slate-800 hover:border-slate-600 hover:text-white'
+                    }">
+                    ${q.label}
+                </button>`;
+            }).join('');
+
+            // 2.5 Construtor Modular de Tensões (Toggles de 6, 7, 7M, 9, b9, #9, 11, #11, 13, b13)
+            const tensionContainer = document.getElementById('tension-toggles');
+            tensionContainer.innerHTML = MODULAR_TENSIONS.map(t => {
+                const isOn = activeIntervals.includes(t.semitone);
+                return `
+                <button onclick="toggleCustomTension(${t.semitone})"
+                    class="px-2.5 py-1 rounded-lg font-mono text-xs font-bold transition-all border ${
+                        isOn
+                        ? 'bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-500/20'
+                        : 'bg-studio-900 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white'
+                    }">
+                    ${t.label}
+                </button>`;
+            }).join('');
+
+            // 3. Seletor de Baixo (Slash Chord)
+            const bassSelect = document.getElementById('bass-select');
+            let bassOptions = `<option value="">Sem inversão (Tônica no baixo)</option>`;
+            noteArray.forEach((note, pitch) => {
+                if (pitch !== currentState.rootPitch) {
+                    const selected = currentState.bassPitch === pitch ? 'selected' : '';
+                    bassOptions += `<option value="${pitch}" ${selected}>/${note} (Baixo em ${SINGLE_NOTE_PT[note]})</option>`;
+                }
+            });
+            bassSelect.innerHTML = bassOptions;
+        }
+
+        function renderTheoryPanel() {
+            const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
+            const rootName = noteArray[currentState.rootPitch];
+            const intervals = getCurrentIntervals();
+            const desc = describeIntervals(intervals);
+            const bassName = currentState.bassPitch !== null ? noteArray[currentState.bassPitch] : null;
+
+            const fullNamePt = `${SINGLE_NOTE_PT[rootName]} ${desc.namePt}${bassName ? ' com Baixo em ' + SINGLE_NOTE_PT[bassName] : ''}`;
+
+            document.getElementById('display-fullname').textContent = fullNamePt;
+            document.getElementById('display-formula').textContent = `Fórmula Intervalar: ${desc.formula}`;
+
+            const badgesContainer = document.getElementById('notes-badges');
+            let badgesHTML = '';
+            const activeInstrument = currentState.viewMode === 'guitar' ? 'guitar' : 'piano';
+
+            if (currentState.bassPitch !== null && currentState.bassPitch !== currentState.rootPitch) {
+                const bassMidi = 48 + currentState.bassPitch;
+                badgesHTML += `
+                <button onclick="playTone(${bassMidi}, '${activeInstrument}')" class="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 transition">
+                    <span class="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-mono font-extrabold text-xs flex items-center justify-center">
+                        ${bassName}
+                    </span>
+                    <div class="text-left">
+                        <div class="text-xs font-bold text-amber-300">${SINGLE_NOTE_PT[bassName]}</div>
+                        <div class="text-[10px] text-amber-400/80 uppercase tracking-wider">Baixo</div>
+                    </div>
+                </button>`;
+            }
+
+            intervals.forEach((intv, idx) => {
+                const pitch = (currentState.rootPitch + intv) % 12;
+                const noteStr = noteArray[pitch];
+                const info = INTERVAL_INFO[intv] || { name: 'Extensão', short: intv, isTension: true };
+                const isRoot = idx === 0;
+                const midi = 60 + currentState.rootPitch + intv;
+
+                let cardStyle = 'bg-studio-950 border border-slate-700/80 hover:border-blue-500/60';
+                let badgeBg = 'bg-blue-600 text-white';
+                if (isRoot) {
+                    cardStyle = 'bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25';
+                    badgeBg = 'bg-amber-500 text-slate-950';
+                } else if (info.isTension) {
+                    cardStyle = 'bg-purple-500/10 border border-purple-500/40 hover:bg-purple-500/20';
+                    badgeBg = 'bg-purple-600 text-white';
+                }
+
+                badgesHTML += `
+                <button onclick="playTone(${midi}, '${activeInstrument}')" class="group flex items-center gap-2 px-3 py-1.5 rounded-xl ${cardStyle} transition">
+                    <span class="w-7 h-7 rounded-lg ${badgeBg} font-mono font-extrabold text-xs flex items-center justify-center">
+                        ${noteStr}
+                    </span>
+                    <div class="text-left">
+                        <div class="text-xs font-bold text-white">${SINGLE_NOTE_PT[noteStr]} <span class="text-[10px] font-mono text-slate-400">(${info.short})</span></div>
+                        <div class="text-[10px] text-slate-400">${info.name}</div>
+                    </div>
+                </button>`;
+            });
+
+            badgesContainer.innerHTML = badgesHTML;
+        }
+
+        function updateAll(syncInput = true) {
+            const desc = describeIntervals(getCurrentIntervals());
+            currentState.qualityId = desc.qualityId;
+
+            if (syncInput) {
+                const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
+                const rootName = noteArray[currentState.rootPitch];
+                const bassName = currentState.bassPitch !== null ? noteArray[currentState.bassPitch] : null;
+                document.getElementById('chord-input').value = `${rootName}${desc.suffix}${bassName ? '/' + bassName : ''}`;
+                setInputStatus(true);
+            }
+            renderControls();
+            renderTheoryPanel();
+            renderPiano();
+            renderGuitar();
+        }
+
+        /**************************************************************
+         * 8. EVENT HANDLERS E INTERAÇÕES DO USUÁRIO
+         **************************************************************/
+        function selectCategory(catId) {
+            currentState.activeCategory = catId;
+            renderControls();
+        }
+
+        function selectRoot(pitch) {
+            currentState.rootPitch = pitch;
+            if (currentState.bassPitch === pitch) currentState.bassPitch = null;
+            currentState.guitarVarIndex = 0;
+            updateAll(true);
+            playCurrentChord('block');
+        }
+
+        function selectQuality(qualityId) {
+            const qObj = CHORD_QUALITIES.find(q => q.id === qualityId);
+            if (qObj) {
+                currentState.qualityId = qualityId;
+                currentState.customIntervals = [...qObj.intervals];
+                currentState.guitarVarIndex = 0;
+                updateAll(true);
+                playCurrentChord('block');
+            }
+        }
+
+        function toggleCustomTension(semitone) {
+            const set = new Set(currentState.customIntervals);
+            if (set.has(semitone)) {
+                set.delete(semitone);
+                // Se removeu b5 ou #5, restaura a 5ª justa
+                if (semitone === 6 || semitone === 8) set.add(7);
+            } else {
+                // Exclusividade mútua inteligente entre alterações do mesmo grau
+                if (semitone === 6) { set.delete(7); set.delete(8); }
+                if (semitone === 8) { set.delete(7); set.delete(6); }
+                if (semitone === 10) set.delete(11);
+                if (semitone === 11) set.delete(10);
+                if (semitone === 13) { set.delete(14); set.delete(15); }
+                if (semitone === 14) { set.delete(13); set.delete(15); }
+                if (semitone === 15) { set.delete(13); set.delete(14); }
+                if (semitone === 17) set.delete(18);
+                if (semitone === 18) set.delete(17);
+                if (semitone === 20) set.delete(21);
+                if (semitone === 21) set.delete(20);
+                set.add(semitone);
+            }
+            currentState.customIntervals = [...set].sort((a, b) => a - b);
+            currentState.guitarVarIndex = 0;
+            updateAll(true);
+            playCurrentChord('block');
+        }
+
+        function clearCustomTensions() {
+            const hasMin3 = currentState.customIntervals.includes(3);
+            currentState.customIntervals = hasMin3 ? [0, 3, 7] : [0, 4, 7];
+            currentState.guitarVarIndex = 0;
+            updateAll(true);
+            playCurrentChord('block');
+        }
+
+        function onBassChange(val) {
+            currentState.bassPitch = val === '' ? null : parseInt(val, 10);
+            currentState.guitarVarIndex = 0;
+            updateAll(true);
+            playCurrentChord('block');
+        }
+
+        function toggleFlatMode() {
+            currentState.preferFlat = !currentState.preferFlat;
+            updateAll(true);
+        }
+
+        function parseAndSetChord(chordStr) {
+            document.getElementById('chord-input').value = chordStr;
+            const parsed = parseChordString(chordStr);
+            if (parsed) {
+                currentState.rootPitch = parsed.rootPitch;
+                currentState.preferFlat = parsed.preferFlat;
+                currentState.qualityId = parsed.qualityId;
+                currentState.customIntervals = [...parsed.intervals];
+                currentState.bassPitch = parsed.bassPitch;
+                currentState.guitarVarIndex = 0;
+                updateAll(false);
+                setInputStatus(true);
+                playCurrentChord('block');
+            }
+        }
+
+        function setInputStatus(isValid) {
+            const badge = document.getElementById('input-status');
+            if (isValid) {
+                badge.textContent = 'Reconhecido';
+                badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium';
+            } else {
+                badge.textContent = 'Cifra inválida';
+                badge.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium';
+            }
+        }
+
+        function setViewMode(mode) {
+            currentState.viewMode = mode;
+            const pianoCard = document.getElementById('piano-card');
+            const guitarCard = document.getElementById('guitar-card');
+            const btnBoth = document.getElementById('view-both');
+            const btnPiano = document.getElementById('view-piano');
+            const btnGuitar = document.getElementById('view-guitar');
+
+            const activeClass = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-indigo-600 text-white shadow';
+            const inactiveClass = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-400 hover:text-white';
+
+            btnBoth.className = mode === 'both' ? activeClass : inactiveClass;
+            btnPiano.className = mode === 'piano' ? activeClass : inactiveClass;
+            btnGuitar.className = mode === 'guitar' ? activeClass : inactiveClass;
+
+            if (mode === 'both') {
+                pianoCard.className = 'lg:col-span-7 bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl';
+                guitarCard.className = 'lg:col-span-5 bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl';
+            } else if (mode === 'piano') {
+                pianoCard.className = 'lg:col-span-12 bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl';
+                guitarCard.className = 'hidden';
+            } else if (mode === 'guitar') {
+                pianoCard.className = 'hidden';
+                guitarCard.className = 'lg:col-span-12 max-w-2xl mx-auto w-full bg-studio-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl';
+            }
+            renderTheoryPanel();
+        }
+
+        // Listener de digitação em tempo real no campo de cifra
+        document.getElementById('chord-input').addEventListener('input', (e) => {
+            const val = e.target.value;
+            const parsed = parseChordString(val);
+            if (parsed) {
+                currentState.rootPitch = parsed.rootPitch;
+                currentState.preferFlat = parsed.preferFlat;
+                currentState.qualityId = parsed.qualityId;
+                currentState.customIntervals = [...parsed.intervals];
+                currentState.bassPitch = parsed.bassPitch;
+                currentState.guitarVarIndex = 0;
+                setInputStatus(true);
+                updateAll(false);
+            } else {
+                setInputStatus(false);
+            }
+        });
+
+        // Inicialização ao carregar a página
+        window.onload = function() {
+            updateAll(true);
+        };
+    </script>
+</body>
+</html>
