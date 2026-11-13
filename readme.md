@@ -8,9 +8,6 @@
   <a href="https://denis-tek.github.io/cifra-studio/" target="_blank">
     <img src="https://img.shields.io/badge/▶_Executar_Aplicação-GitHub_Pages-6366f1?style=for-the-badge" alt="Executar no GitHub Pages" />
   </a>
-  <a href="http://denis-tek.github.io/" target="_blank">
-    <img src="https://img.shields.io/badge/🌐_Portfólio-denis--tek.github.io-f59e0b?style=for-the-badge" alt="GitHub Pages Principal" />
-  </a>
   <a href="https://github.com/Denis-Tek/cifra-studio" target="_blank">
     <img src="https://img.shields.io/badge/GitHub-Repositório-181717?style=for-the-badge&logo=github" alt="Repositório no GitHub" />
   </a>
@@ -31,7 +28,6 @@ Desenvolvido em um único arquivo autocontido (`index.html`), o projeto conta co
 Acesse e utilize o aplicativo diretamente pelo navegador através do **GitHub Pages**:
 
 - 🔗 **Link direto do projeto:** [https://denis-tek.github.io/cifra-studio/](https://denis-tek.github.io/cifra-studio/)
-- 🔗 **Página principal GitHub Pages:** [http://denis-tek.github.io/](http://denis-tek.github.io/)
 
 ---
 
@@ -94,5 +90,5 @@ cd cifra-studio
 
 Desenvolvido por **Denis** ([Denis-Tek](https://github.com/Denis-Tek)).
 
-- 🌐 GitHub Pages: [http://denis-tek.github.io/](http://denis-tek.github.io/)
+- 🌐 Aplicação Online: [https://denis-tek.github.io/cifra-studio/](https://denis-tek.github.io/cifra-studio/)
 - 📦 Repositório: [https://github.com/Denis-Tek/cifra-studio](https://github.com/Denis-Tek/cifra-studio)
