@@ -221,8 +221,8 @@
                         <input 
                             type="text" 
                             id="chord-input" 
-                            placeholder="Ex: C7M(9), F#m7(11), G7(13), E7(#9), A6(9), C6/7..." 
-                            value="C7M(9)"
+                            placeholder="Ex: D, D7, C7M(9), F#m7(11), G7(13)..." 
+                            value="D7"
                             autocomplete="off"
                             class="w-full bg-studio-950 border-2 border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-3 text-lg font-mono font-bold text-white placeholder-slate-600 focus:outline-none transition-all pr-28"
                         >
@@ -231,19 +231,19 @@
                         </span>
                     </div>
                     <p class="text-xs text-slate-400 leading-relaxed">
-                        Suporta 9ª, 11ª, 13ª, alterações (<code class="text-slate-300">b9, #9, #11, b13</code>), acordes compostos (<code class="text-slate-300">7(9/13), 6(9), 6/7</code>) e inversões (<code class="text-slate-300">/B, /G</code>).
+                        Suporta acordes abertos tradicionais, 9ª, 11ª, 13ª, alterações (<code class="text-slate-300">b9, #9, #11, b13</code>), compostos (<code class="text-slate-300">7(9/13), 6(9), 6/7</code>) e inversões (<code class="text-slate-300">/B, /F#</code>).
                     </p>
                     <!-- Quick Examples -->
                     <div class="pt-1 flex flex-wrap gap-1.5 items-center">
                         <span class="text-xs text-slate-500 mr-1">Exemplos:</span>
+                        <button onclick="parseAndSetChord('D')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">D</button>
+                        <button onclick="parseAndSetChord('D7')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">D7</button>
                         <button onclick="parseAndSetChord('C7M(9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">C7M(9)</button>
                         <button onclick="parseAndSetChord('G7(13)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">G7(13)</button>
                         <button onclick="parseAndSetChord('F#m7(11)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">F#m7(11)</button>
-                        <button onclick="parseAndSetChord('E7(#9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">E7(#9)</button>
                         <button onclick="parseAndSetChord('A6(9)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">A6(9)</button>
                         <button onclick="parseAndSetChord('D7(9/13)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">D7(9/13)</button>
-                        <button onclick="parseAndSetChord('C6/7')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">C6/7</button>
-                        <button onclick="parseAndSetChord('Bm7(b5)')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">Bm7(b5)</button>
+                        <button onclick="parseAndSetChord('D/F#')" class="text-xs font-mono px-2 py-1 rounded bg-studio-800 hover:bg-indigo-600/40 text-slate-300 border border-slate-700/80 transition">D/F#</button>
                     </div>
                 </div>
 
@@ -309,10 +309,10 @@
                 <div class="md:col-span-4">
                     <span class="text-xs uppercase tracking-wider text-indigo-400 font-semibold">Nomenclatura Harmônica</span>
                     <h2 id="display-fullname" class="text-base sm:text-lg font-bold text-white leading-snug mt-0.5">
-                        Dó Maior com Sétima Maior e Nona
+                        Ré Dominante (7ª Menor)
                     </h2>
                     <p id="display-formula" class="text-xs text-slate-400 font-mono mt-1">
-                        Fórmula Intervalar: 1 - 3 - 5 - 7M - 9
+                        Fórmula Intervalar: 1 - 3 - 5 - 7
                     </p>
                 </div>
 
@@ -396,7 +396,7 @@
                             <span class="text-xl">🎸</span>
                             <div>
                                 <h3 class="text-base sm:text-lg font-bold text-white">Violão / Guitarra</h3>
-                                <p class="text-xs text-slate-400">Shapes de MPB, Bossa Nova, Jazz & CAGED</p>
+                                <p class="text-xs text-slate-400">Acordes Abertos Clássicos, CAGED, MPB & Jazz</p>
                             </div>
                         </div>
 
@@ -448,7 +448,7 @@
 
                             <div class="pt-2 border-t border-slate-800/80 space-y-1">
                                 <div class="text-[11px] text-slate-400" id="guitar-omission-note">
-                                    Em acordes de 11ª e 13ª no violão, a 5ª justa costuma ser omitida para priorizar as tensões.
+                                    A Posição 1 prioriza acordes abertos tradicionais (quando disponíveis). Use as setas <strong class="text-white">&lt; &gt;</strong> para ver pestanas e shapes de Jazz/MPB.
                                 </div>
                             </div>
                         </div>
@@ -476,7 +476,7 @@
     <!-- Footer -->
     <footer class="border-t border-slate-800/70 bg-studio-950 py-4 px-4 text-center text-xs text-slate-500">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p>CifraStudio Pro • Motor Harmônico Completo (Tríades, Sétimas, 9ª, 11ª, 13ª, Alterados e Compostos)</p>
+            <p>CifraStudio Pro • Motor Harmônico Completo (Acordes Abertos, CAGED, Sétimas, 9ª, 11ª, 13ª, Alterados e Compostos)</p>
             <p>Dica: Use o Construtor de Tensões Extras para combinar qualquer intervalo sobre o acorde.</p>
         </div>
     </footer>
@@ -532,7 +532,7 @@
             { semitone: 20, label: '+b13', code: 'b13' },
             { semitone: 21, label: '+13',  code: '13'  },
             { semitone: 6,  label: 'b5',   code: 'b5'  },
-            { semitone: 8,  label: '#5',   code: '#5'  }
+            { semitone: 8,  label: '#5',  code: '#5'  }
         ];
 
         const CATEGORIES = [
@@ -608,14 +608,14 @@
             { id: '7(#11/13)', cat: '13th',   label: '7(#11/13)',   suffix: '7(#11/13)', namePt: 'Dominante Lídio (#11/13)',           intervals: [0, 4, 7, 10, 18, 21] }
         ];
 
-        // Estado Global da Aplicação
+        // Estado Global da Aplicação (Iniciando com D7 para demonstrar o acorde aberto clássico)
         let currentState = {
-            rootPitch: 0,
+            rootPitch: 2, // D
             preferFlat: false,
-            qualityId: '7M(9)',
+            qualityId: '7',
             activeCategory: 'all',
-            customIntervals: [0, 4, 7, 11, 14], // Intervalos ativos reais (suporta modo customizado)
-            customSuffix: null,                 // Se o usuário montou ou digitou uma cifra composta customizada
+            customIntervals: [0, 4, 7, 10],
+            customSuffix: null,
             customNamePt: null,
             bassPitch: null,
             guitarVarIndex: 0,
@@ -623,15 +623,12 @@
             theme: 'dark'
         };
 
-        // Retorna os intervalos ativos ordenados
         function getCurrentIntervals() {
             return [...currentState.customIntervals].sort((a, b) => a - b);
         }
 
-        // Reconstrói o sufixo e o nome em português a partir de qualquer conjunto de intervalos
         function describeIntervals(intervals) {
             const sorted = [...new Set(intervals)].sort((a, b) => a - b);
-            // Verifica se bate exatamente com alguma qualidade do dicionário
             const exactMatch = CHORD_QUALITIES.find(q =>
                 q.intervals.length === sorted.length &&
                 q.intervals.every((val, idx) => val === sorted[idx])
@@ -645,7 +642,6 @@
                 };
             }
 
-            // Construção dinâmica de cifra composta caso não esteja pré-cadastrada
             const hasMin3 = sorted.includes(3);
             const hasMaj3 = sorted.includes(4);
             const hasSus4 = sorted.includes(5) && !hasMin3 && !hasMaj3;
@@ -692,32 +688,101 @@
         }
 
         /**************************************************************
-         * 2. VOICINGS DE VIOLÃO (SHAPES MPB/JAZZ + GERADOR ALGORÍTMICO)
+         * 2. VOICINGS DE VIOLÃO: ACORDES ABERTOS CLÁSSICOS + CAGED + MPB/JAZZ
          **************************************************************/
         const GUITAR_TUNING_MIDI = [40, 45, 50, 55, 59, 64]; // E2 A2 D3 G3 B3 E4
 
-        // Formas móveis precisas (incluindo Bossa Nova / Jazz para 9ª, 11ª, 13ª e Compostos)
-        // baseRootString: 0 (6ª corda Mi) ou 1 (5ª corda Lá)
+        // Dicionário Prioritário de Acordes Abertos Tradicionais (1ª Posição / Violão Popular)
+        // Chave: "rootPitch:qualityId" (ou "rootPitch:qualityId/bassPitch" para inversões clássicas)
+        const OPEN_CHORD_SHAPES = {
+            // DÓ (C = 0)
+            '0:':       [{ frets: [-1, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0], barre: null, label: 'Posição Aberta Clássica (C)' }],
+            '0:7':      [{ frets: [-1, 3, 2, 3, 1, 0], fingers: [0, 3, 2, 4, 1, 0], barre: null, label: 'Posição Aberta Clássica (C7)' }],
+            '0:7M':     [{ frets: [-1, 3, 2, 0, 0, 0], fingers: [0, 3, 2, 0, 0, 0], barre: null, label: 'Posição Aberta Clássica (C7M)' }],
+            '0:add9':   [{ frets: [-1, 3, 2, 0, 3, 0], fingers: [0, 2, 1, 0, 3, 0], barre: null, label: 'Posição Aberta Clássica (Cadd9)' }],
+            '0:6':      [{ frets: [-1, 3, 2, 2, 1, 0], fingers: [0, 3, 2, 4, 1, 0], barre: null, label: 'Posição Aberta (C6)' }],
+
+            // RÉ (D = 2) -> Utiliza a 4ª corda solta (D) e apenas 3 dedos nas primeiras casas!
+            '2:':       [{ frets: [-1, -1, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2], barre: null, label: 'Posição Aberta Clássica (D)' }],
+            '2:m':      [{ frets: [-1, -1, 0, 2, 3, 1], fingers: [0, 0, 0, 2, 3, 1], barre: null, label: 'Posição Aberta Clássica (Dm)' }],
+            '2:7':      [{ frets: [-1, -1, 0, 2, 1, 2], fingers: [0, 0, 0, 2, 1, 3], barre: null, label: 'Posição Aberta Clássica (D7)' }],
+            '2:7M':     [{ frets: [-1, -1, 0, 2, 2, 2], fingers: [0, 0, 0, 1, 1, 1], barre: { from: 4, to: 6, fret: 2 }, label: 'Posição Aberta Clássica (D7M)' },
+                         { frets: [-1, -1, 0, 2, 2, 2], fingers: [0, 0, 0, 1, 2, 3], barre: null, label: 'Posição Aberta com 3 Dedos (D7M)' }],
+            '2:m7':     [{ frets: [-1, -1, 0, 2, 1, 1], fingers: [0, 0, 0, 2, 1, 1], barre: { from: 5, to: 6, fret: 1 }, label: 'Posição Aberta Clássica (Dm7)' }],
+            '2:sus4':   [{ frets: [-1, -1, 0, 2, 3, 3], fingers: [0, 0, 0, 1, 3, 4], barre: null, label: 'Posição Aberta Clássica (Dsus4)' }],
+            '2:sus2':   [{ frets: [-1, -1, 0, 2, 3, 0], fingers: [0, 0, 0, 1, 3, 0], barre: null, label: 'Posição Aberta Clássica (Dsus2)' }],
+            '2:6':      [{ frets: [-1, -1, 0, 2, 0, 2], fingers: [0, 0, 0, 1, 0, 2], barre: null, label: 'Posição Aberta Clássica (D6)' }],
+            '2:m6':     [{ frets: [-1, -1, 0, 2, 0, 1], fingers: [0, 0, 0, 2, 0, 1], barre: null, label: 'Posição Aberta Clássica (Dm6)' }],
+            '2:7sus4':  [{ frets: [-1, -1, 0, 2, 1, 3], fingers: [0, 0, 0, 2, 1, 4], barre: null, label: 'Posição Aberta Clássica (D7sus4)' }],
+            '2:/6':     [{ frets: [2, 0, 0, 2, 3, 2], fingers: [1, 0, 0, 2, 4, 3], barre: null, label: 'Posição Aberta Clássica (D/F#)' }],
+
+            // MI (E = 4)
+            '4:':       [{ frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0], barre: null, label: 'Posição Aberta Clássica (E)' }],
+            '4:m':      [{ frets: [0, 2, 2, 0, 0, 0], fingers: [0, 2, 3, 0, 0, 0], barre: null, label: 'Posição Aberta Clássica (Em)' }],
+            '4:7':      [{ frets: [0, 2, 0, 1, 0, 0], fingers: [0, 2, 0, 1, 0, 0], barre: null, label: 'Posição Aberta Clássica (E7)' },
+                         { frets: [0, 2, 2, 1, 3, 0], fingers: [0, 2, 3, 1, 4, 0], barre: null, label: 'Posição Aberta com 7ª na 2ª corda (E7)' }],
+            '4:7M':     [{ frets: [0, 2, 1, 1, 0, 0], fingers: [0, 3, 1, 2, 0, 0], barre: null, label: 'Posição Aberta Clássica (E7M)' }],
+            '4:m7':     [{ frets: [0, 2, 0, 0, 0, 0], fingers: [0, 2, 0, 0, 0, 0], barre: null, label: 'Posição Aberta Clássica (Em7)' },
+                         { frets: [0, 2, 2, 0, 3, 0], fingers: [0, 1, 2, 0, 3, 0], barre: null, label: 'Posição Aberta com 4 dedos (Em7)' }],
+            '4:sus4':   [{ frets: [0, 2, 2, 2, 0, 0], fingers: [0, 2, 3, 4, 0, 0], barre: null, label: 'Posição Aberta Clássica (Esus4)' }],
+            '4:6':      [{ frets: [0, 2, 2, 1, 2, 0], fingers: [0, 2, 3, 1, 4, 0], barre: null, label: 'Posição Aberta Clássica (E6)' }],
+            '4:m6':     [{ frets: [0, 2, 2, 0, 2, 0], fingers: [0, 1, 2, 0, 3, 0], barre: null, label: 'Posição Aberta Clássica (Em6)' }],
+
+            // FÁ (F = 5)
+            '5:7M':     [{ frets: [-1, -1, 3, 2, 1, 0], fingers: [0, 0, 3, 2, 1, 0], barre: null, label: 'Posição Aberta Clássica (F7M)' }],
+
+            // SOL (G = 7)
+            '7:':       [{ frets: [3, 2, 0, 0, 0, 3], fingers: [2, 1, 0, 0, 0, 3], barre: null, label: 'Posição Aberta Clássica (G)' },
+                         { frets: [3, 2, 0, 0, 3, 3], fingers: [2, 1, 0, 0, 3, 4], barre: null, label: 'Posição Aberta Pop/Rock (G)' }],
+            '7:7':      [{ frets: [3, 2, 0, 0, 0, 1], fingers: [3, 2, 0, 0, 0, 1], barre: null, label: 'Posição Aberta Clássica (G7)' }],
+            '7:7M':     [{ frets: [3, 2, 0, 0, 0, 2], fingers: [3, 1, 0, 0, 0, 2], barre: null, label: 'Posição Aberta Clássica (G7M)' }],
+            '7:6':      [{ frets: [3, 2, 0, 0, 0, 0], fingers: [2, 1, 0, 0, 0, 0], barre: null, label: 'Posição Aberta Clássica (G6)' }],
+            '7:/11':    [{ frets: [-1, 2, 0, 0, 3, 3], fingers: [0, 1, 0, 0, 3, 4], barre: null, label: 'Posição Aberta Clássica (G/B)' }],
+
+            // LÁ (A = 9)
+            '9:':       [{ frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 0, 1, 2, 3, 0], barre: null, label: 'Posição Aberta Clássica (A)' }],
+            '9:m':      [{ frets: [-1, 0, 2, 2, 1, 0], fingers: [0, 0, 2, 3, 1, 0], barre: null, label: 'Posição Aberta Clássica (Am)' }],
+            '9:7':      [{ frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 0, 1, 0, 2, 0], barre: null, label: 'Posição Aberta Clássica (A7)' },
+                         { frets: [-1, 0, 2, 2, 2, 3], fingers: [0, 0, 1, 1, 1, 3], barre: { from: 3, to: 5, fret: 2 }, label: 'Posição Aberta com 7ª na 1ª corda (A7)' }],
+            '9:7M':     [{ frets: [-1, 0, 2, 1, 2, 0], fingers: [0, 0, 2, 1, 3, 0], barre: null, label: 'Posição Aberta Clássica (A7M)' }],
+            '9:m7':     [{ frets: [-1, 0, 2, 0, 1, 0], fingers: [0, 0, 2, 0, 1, 0], barre: null, label: 'Posição Aberta Clássica (Am7)' }],
+            '9:sus4':   [{ frets: [-1, 0, 2, 2, 3, 0], fingers: [0, 0, 1, 2, 3, 0], barre: null, label: 'Posição Aberta Clássica (Asus4)' }],
+            '9:sus2':   [{ frets: [-1, 0, 2, 2, 0, 0], fingers: [0, 0, 1, 2, 0, 0], barre: null, label: 'Posição Aberta Clássica (Asus2)' }],
+            '9:6':      [{ frets: [-1, 0, 2, 2, 2, 2], fingers: [0, 0, 1, 1, 1, 1], barre: { from: 3, to: 6, fret: 2 }, label: 'Posição Aberta Clássica (A6)' }],
+            '9:m6':     [{ frets: [-1, 0, 2, 2, 1, 2], fingers: [0, 0, 2, 3, 1, 4], barre: null, label: 'Posição Aberta Clássica (Am6)' }],
+            '9:7sus4':  [{ frets: [-1, 0, 2, 0, 3, 0], fingers: [0, 0, 1, 0, 3, 0], barre: null, label: 'Posição Aberta Clássica (A7sus4)' }],
+
+            // SI (B = 11)
+            '11:7':     [{ frets: [-1, 2, 1, 2, 0, 2], fingers: [0, 2, 1, 3, 0, 4], barre: null, label: 'Posição Aberta Clássica (B7)' }]
+        };
+
+        // Formas móveis transponíveis (CAGED nas cordas 6, 5 e 4 + MPB/Bossa Nova/Jazz)
+        // baseRootString: 0 (6ª corda Mi), 1 (5ª corda Lá) ou 2 (4ª corda Ré)
         const MOVABLE_SHAPES = {
             '': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 2, 1, 0, 0], fingers: [1, 3, 4, 2, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
-                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 1, 2, 3, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 2, 0], fingers: [0, 1, 2, 3, 4, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 2, baseRootFret: 0, frets: [-1, -1, 0, 2, 3, 2], fingers: [0, 0, 1, 2, 4, 3], barre: null }
             ],
             'm': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 2, 0, 0, 0], fingers: [1, 3, 4, 1, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
-                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 1, 0], fingers: [0, 1, 3, 4, 2, 1], barre: { from: 2, to: 6, fret: 0 } }
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 2, 1, 0], fingers: [0, 1, 3, 4, 2, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 2, baseRootFret: 0, frets: [-1, -1, 0, 2, 3, 1], fingers: [0, 0, 1, 3, 4, 2], barre: null }
             ],
             '7': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, 2, 0, 1, 0, 0], fingers: [1, 3, 1, 2, 1, 1], barre: { from: 1, to: 6, fret: 0 } },
-                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 1, 3, 1, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 1, 3, 1, 4, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 2, baseRootFret: 0, frets: [-1, -1, 0, 2, 1, 2], fingers: [0, 0, 1, 3, 2, 4], barre: null }
             ],
             '7M': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 1, 0, -1], fingers: [1, 0, 3, 4, 2, 0], barre: null },
-                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 1, 2, 0], fingers: [0, 1, 3, 2, 4, 1], barre: { from: 2, to: 6, fret: 0 } }
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 1, 2, 0], fingers: [0, 1, 3, 2, 4, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 2, baseRootFret: 0, frets: [-1, -1, 0, 2, 2, 2], fingers: [0, 0, 1, 3, 3, 3], barre: { from: 4, to: 6, fret: 2 } }
             ],
             'm7': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 0, 0, 0, -1], fingers: [1, 0, 2, 3, 4, 0], barre: null },
-                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 1, 0], fingers: [0, 1, 3, 1, 2, 1], barre: { from: 2, to: 6, fret: 0 } }
+                { baseRootString: 1, baseRootFret: 0, frets: [-1, 0, 2, 0, 1, 0], fingers: [0, 1, 3, 1, 2, 1], barre: { from: 2, to: 6, fret: 0 } },
+                { baseRootString: 2, baseRootFret: 0, frets: [-1, -1, 0, 2, 1, 1], fingers: [0, 0, 1, 4, 2, 3], barre: null }
             ],
             'm7M': [
                 { baseRootString: 0, baseRootFret: 0, frets: [0, -1, 1, 0, 0, -1], fingers: [1, 0, 4, 2, 3, 0], barre: null },
@@ -841,68 +906,126 @@
             ]
         };
 
-        // Gerador Algorítmico de Voicings para Violão (garante que qualquer cifra composta tenha posições reais no braço)
+        // Validador Biomecânico e Alocador de Dedos Reais (1 a 4) para Violão
+        // Impede que o mesmo dedo seja alocado em cordas separadas sem pestana válida ou que exija mais de 4 dedos
+        function assignPlayableFingers(frets) {
+            const active = [];
+            for (let s = 0; s < 6; s++) {
+                if (frets[s] > 0) active.push({ s, f: frets[s] });
+            }
+            if (active.length === 0) {
+                return { valid: true, fingers: [0, 0, 0, 0, 0, 0], barre: null };
+            }
+
+            const minFret = Math.min(...active.map(a => a.f));
+            const maxFret = Math.max(...active.map(a => a.f));
+
+            // Abertura máxima anatômica padrão de 4 casas
+            if (maxFret - minFret > 3) {
+                return { valid: false };
+            }
+
+            const fingers = [0, 0, 0, 0, 0, 0];
+            let barre = null;
+
+            // Caso 1: até 4 cordas pressionadas (1 dedo exclusivo para cada nota, ordenado da menor casa para a maior)
+            if (active.length <= 4) {
+                const sorted = [...active].sort((a, b) => a.f !== b.f ? a.f - b.f : a.s - b.s);
+                sorted.forEach((item, idx) => {
+                    fingers[item.s] = idx + 1;
+                });
+                return { valid: true, fingers, barre: null };
+            }
+
+            // Caso 2: 5 ou 6 cordas pressionadas -> exige uma pestana válida do dedo 1 na menor casa (minFret)
+            const onMinFret = active.filter(a => a.f === minFret);
+            if (onMinFret.length >= 2) {
+                const firstString = onMinFret[0].s;
+                const lastString = onMinFret[onMinFret.length - 1].s;
+
+                // Para a pestana na casa minFret ser fisicamente possível, nenhuma corda no intervalo [firstString..lastString]
+                // pode estar solta (0) ou numa casa menor que minFret
+                let canBarre = true;
+                for (let s = firstString; s <= lastString; s++) {
+                    if (frets[s] !== -1 && frets[s] < minFret) {
+                        canBarre = false;
+                        break;
+                    }
+                }
+
+                const remaining = active.filter(a => a.f > minFret);
+                if (canBarre && remaining.length <= 3) {
+                    onMinFret.forEach(item => { fingers[item.s] = 1; });
+                    barre = { from: firstString + 1, to: lastString + 1, fret: minFret };
+
+                    const sortedRem = [...remaining].sort((a, b) => a.f !== b.f ? a.f - b.f : a.s - b.s);
+                    sortedRem.forEach((item, idx) => {
+                        fingers[item.s] = idx + 2; // Dedos 2, 3 e 4 individualmente
+                    });
+                    return { valid: true, fingers, barre };
+                }
+            }
+
+            return { valid: false };
+        }
+
+        // Gerador Algorítmico de Voicings Ergonômicos (Máximo de 4 notas com dedos exclusivos ou pestana válida)
         function generateAlgorithmicGuitarVoicings(rootPitch, intervals, bassPitch) {
             const targetPitchClasses = intervals.map(i => (rootPitch + i) % 12);
             const primaryBass = bassPitch !== null ? bassPitch : rootPitch;
             const generated = [];
 
-            // Testa janelas de 4 casas ao longo do braço (Casa 0, Casa 2, Casa 5, Casa 7)
             [0, 2, 4, 7].forEach((windowStart) => {
                 const frets = [-1, -1, -1, -1, -1, -1];
-                const fingers = [0, 0, 0, 0, 0, 0];
 
-                // 1. Encontra a nota do baixo na 6ª ou 5ª corda dentro da janela
-                let bassString = 0;
-                let foundBass = false;
-                for (let s = 0; s <= 1; s++) {
-                    for (let f = windowStart; f <= windowStart + 4; f++) {
+                // 1. Localiza o baixo na 6ª, 5ª ou 4ª corda dentro da região
+                let bassString = -1;
+                for (let s = 0; s <= 2; s++) {
+                    for (let f = windowStart; f <= windowStart + 3; f++) {
                         if ((GUITAR_TUNING_MIDI[s] + f) % 12 === primaryBass) {
                             frets[s] = f;
                             bassString = s;
-                            foundBass = true;
                             break;
                         }
                     }
-                    if (foundBass) break;
+                    if (bassString !== -1) break;
                 }
-                if (!foundBass) return;
+                if (bassString === -1) return;
 
-                // 2. Preenche as cordas 4, 3, 2 e 1 priorizando terça, sétima e tensões (9, 11, 13, 6)
-                for (let s = bassString + 1; s < 6; s++) {
-                    if (s === 1 && bassString === 0 && intervals.length >= 4) {
-                        // Em acordes de 4+ notas com baixo na 6ª corda (estilo Bossa/Jazz), muta a 5ª corda para clareza
-                        frets[1] = -1;
-                        continue;
-                    }
+                // 2. Escolhe até 3 cordas agudas (totalizando 4 notas no acorde, padrão ergonômico de MPB/Jazz)
+                const upperStrings = [3, 4, 5].filter(s => s > bassString);
+                if (bassString === 0) {
+                    // Voicing clássico com baixo na 6ª corda: usa cordas 4, 3 e 2 (abafa a 5ª e a 1ª para evitar saltos impossíveis)
+                    upperStrings.length = 0;
+                    upperStrings.push(2, 3, 4);
+                }
+
+                upperStrings.forEach(s => {
                     let bestFret = -1;
                     for (let f = Math.max(0, windowStart); f <= windowStart + 3; f++) {
                         const p = (GUITAR_TUNING_MIDI[s] + f) % 12;
                         if (targetPitchClasses.includes(p)) {
                             bestFret = f;
-                            // Prioriza notas que sejam extensões nas cordas agudas (2ª e 1ª corda)
                             const isExtension = intervals.some(intv => intv >= 9 && (rootPitch + intv) % 12 === p);
-                            if (s >= 3 && isExtension) break;
+                            if (isExtension) break;
                         }
                     }
                     frets[s] = bestFret;
-                }
+                });
 
-                // Atribui dedos aproximados ordenados pela casa
-                const activeFrets = frets.filter(f => f > 0);
-                if (activeFrets.length >= 3) {
-                    const minF = Math.min(...activeFrets);
-                    frets.forEach((f, idx) => {
-                        if (f > 0) {
-                            fingers[idx] = Math.min(4, Math.max(1, f - minF + 1));
-                        }
-                    });
-                    generated.push({
-                        frets,
-                        fingers,
-                        barre: null,
-                        label: windowStart === 0 ? 'Voicing na Região Aberta' : `Voicing na ${minF}ª Casa`
-                    });
+                const activeCount = frets.filter(f => f !== -1).length;
+                if (activeCount >= 3) {
+                    const check = assignPlayableFingers(frets);
+                    if (check.valid) {
+                        const pressed = frets.filter(f => f > 0);
+                        const minF = pressed.length ? Math.min(...pressed) : 1;
+                        generated.push({
+                            frets,
+                            fingers: check.fingers,
+                            barre: check.barre,
+                            label: windowStart === 0 ? 'Voicing Compacto (Região Aberta)' : `Voicing Compacto (${minF}ª Casa)`
+                        });
+                    }
                 }
             });
 
@@ -913,7 +1036,23 @@
             const results = [];
             const intervals = getCurrentIntervals();
 
-            // 1. Procura nos templates móveis (MPB/Jazz/CAGED)
+            // 1. PRIORIDADE MÁXIMA: Acordes Abertos Tradicionais (1ª Posição sem pestana desnecessária, ex: D, D7, Dm, C, G, A, E...)
+            const openKey = bassPitch !== null
+                ? `${rootPitch}:${qualityId}/${bassPitch}`
+                : `${rootPitch}:${qualityId}`;
+
+            if (OPEN_CHORD_SHAPES[openKey]) {
+                OPEN_CHORD_SHAPES[openKey].forEach(s => {
+                    results.push({
+                        frets: [...s.frets],
+                        fingers: [...s.fingers],
+                        barre: s.barre ? { ...s.barre } : null,
+                        label: s.label
+                    });
+                });
+            }
+
+            // 2. Formas Móveis (CAGED nas cordas 6, 5 e 4 + Shapes de MPB/Bossa/Jazz)
             const templates = MOVABLE_SHAPES[qualityId];
             if (templates) {
                 templates.forEach((tpl) => {
@@ -937,36 +1076,54 @@
                             };
                         }
 
-                        // Ajusta o baixo se houver Slash Chord
+                        // Se houver inversão de baixo (Slash Chord), valida biomecanicamente a alteração
                         if (bassPitch !== null && bassPitch !== rootPitch) {
+                            let slashApplied = false;
                             for (let s = 0; s <= 1; s++) {
                                 const openP = GUITAR_TUNING_MIDI[s] % 12;
                                 const bFret = (bassPitch - openP + 12) % 12;
-                                if (Math.abs(bFret - Math.max(1, targetFret)) <= 3) {
-                                    newFrets[s] = bFret;
-                                    if (s === 1) newFrets[0] = -1;
-                                    break;
+                                if (Math.abs(bFret - Math.max(1, targetFret)) <= 2) {
+                                    const candidateFrets = [...newFrets];
+                                    candidateFrets[s] = bFret;
+                                    if (s === 1) candidateFrets[0] = -1;
+                                    const bio = assignPlayableFingers(candidateFrets);
+                                    if (bio.valid) {
+                                        for (let i = 0; i < 6; i++) {
+                                            newFrets[i] = candidateFrets[i];
+                                            newFingers[i] = bio.fingers[i];
+                                        }
+                                        newBarre = bio.barre;
+                                        slashApplied = true;
+                                        break;
+                                    }
                                 }
                             }
+                            if (!slashApplied) return;
                         }
 
-                        const minPositive = Math.min(...newFrets.filter(f => f > 0), 1);
-                        results.push({
-                            frets: newFrets,
-                            fingers: newFingers,
-                            barre: newBarre,
-                            label: targetFret === 0 ? 'Posição Padrão / Aberta' : `Posição na ${minPositive}ª Casa (CAGED/MPB)`
-                        });
+                        const isDup = results.some(r => r.frets.join(',') === newFrets.join(','));
+                        if (!isDup) {
+                            const minPositive = Math.min(...newFrets.filter(f => f > 0), 1);
+                            const cordaNome = tpl.baseRootString === 0 ? '6ª corda' : (tpl.baseRootString === 1 ? '5ª corda' : '4ª corda');
+                            results.push({
+                                frets: newFrets,
+                                fingers: newFingers,
+                                barre: newBarre,
+                                label: targetFret === 0 ? `Posição Aberta (Baixo na ${cordaNome})` : `${minPositive}ª Casa (Tônica na ${cordaNome})`
+                            });
+                        }
                     }
                 });
             }
 
-            // 2. Complementa com voicings algorítmicos (garante cobertura total para cifras compostas customizadas)
-            const algoShapes = generateAlgorithmicGuitarVoicings(rootPitch, intervals, bassPitch);
-            algoShapes.forEach(s => {
-                const isDup = results.some(r => r.frets.join(',') === s.frets.join(','));
-                if (!isDup) results.push(s);
-            });
+            // 3. Só aciona o Gerador Algorítmico quando for um acorde composto customizado ou houver menos de 2 posições catalogadas
+            if (results.length < 2) {
+                const algoShapes = generateAlgorithmicGuitarVoicings(rootPitch, intervals, bassPitch);
+                algoShapes.forEach(s => {
+                    const isDup = results.some(r => r.frets.join(',') === s.frets.join(','));
+                    if (!isDup) results.push(s);
+                });
+            }
 
             if (results.length === 0) {
                 results.push({ frets: [0, 2, 2, 1, 0, 0], fingers: [0, 2, 3, 1, 0, 0], barre: null, label: 'Posição Base' });
@@ -982,7 +1139,6 @@
             if (!input || !input.trim()) return null;
             let str = input.trim().replace(/\s+/g, '');
 
-            // 1. Extrai Nota Fundamental (C, F#, Bb, etc.)
             const rootMatch = str.match(/^([A-Ga-g])([#b♯♭]?)(.*)$/);
             if (!rootMatch) return null;
 
@@ -999,8 +1155,6 @@
             }
             if (rootPitch === -1) return null;
 
-            // 2. Extrai Baixo Invertido no final se for uma Nota Musical (ex: /G, /F#, /Bb)
-            // Cuidado para não confundir /9 ou /7 (cifras como C6/9 ou C6/7) com nota de baixo!
             let bassPitch = null;
             const slashBassMatch = rest.match(/^(.*)\/([A-Ga-g][#b♯♭]?)$/);
             if (slashBassMatch) {
@@ -1014,7 +1168,6 @@
                 if (bassPitch === -1) return null;
             }
 
-            // 3. Verifica primeiro se o sufixo corresponde diretamente ou por alias ao dicionário
             const aliasMap = {
                 '': '', 'M': '', 'maj': '',
                 'm': 'm', 'min': 'm', '-': 'm',
@@ -1081,11 +1234,9 @@
                 };
             }
 
-            // 4. Parser Modular Genérico para qualquer combinação de 6, 7, 7M, 9, b9, #9, 11, #11, 13, b13
             let intervals = new Set([0, 4, 7]);
             let working = rest;
 
-            // Detecta menor / diminuto / aumentado / sus na base
             if (/^(m7M|m\(maj7\)|mM7)/.test(working)) {
                 intervals = new Set([0, 3, 7, 11]);
                 working = working.replace(/^(m7M|m\(maj7\)|mM7)/, '');
@@ -1104,22 +1255,18 @@
                 working = working.replace(/^(aug|\+)/, '');
             }
 
-            // Sétima Maior (7M, maj7, M7, 7+)
             if (/(7M|maj7|M7|7\+|Δ)/.test(working)) {
                 intervals.add(11);
                 working = working.replace(/(7M|maj7|M7|7\+|Δ)/g, ' ');
             }
-            // Sexta
             if (/(^|[\/\(\s])6($|[\/\(\)\s])/.test(working) || working.startsWith('6')) {
                 intervals.add(9);
                 working = working.replace(/6/g, ' ');
             }
-            // Sétima Menor
             if (/7/.test(working)) {
                 intervals.add(10);
                 working = working.replace(/7/g, ' ');
             }
-            // Atalhos de 13, 11, 9 isolados na base
             if (/^13/.test(working)) {
                 intervals.add(10); intervals.add(14); intervals.add(21);
                 working = working.replace(/^13/, ' ');
@@ -1131,7 +1278,6 @@
                 working = working.replace(/^9/, ' ');
             }
 
-            // Extrai tokens de tensões separados por parênteses, barras ou vírgulas
             const tokens = working.split(/[\(\)\/,;\s]+/).filter(Boolean);
             for (const tk of tokens) {
                 if (tk === 'sus4' || tk === '4' || tk === 'sus') {
@@ -1163,7 +1309,7 @@
                 } else if (tk === '13' || tk === 'add13') {
                     intervals.add(21);
                 } else {
-                    return null; // Token desconhecido
+                    return null;
                 }
             }
 
@@ -1198,7 +1344,6 @@
             return 440 * Math.pow(2, (midi - 69) / 12);
         }
 
-        // Toca uma única nota com síntese rica (timbre de Piano ou Violão)
         function playTone(midiNote, instrument = 'piano', delay = 0, duration = 1.8) {
             initAudio();
             const now = audioCtx.currentTime + delay;
@@ -1208,7 +1353,6 @@
             masterGain.connect(audioCtx.destination);
 
             if (instrument === 'guitar') {
-                // Timbre de corda dedilhada (Plucked String c/ filtro passa-baixa dinâmico)
                 const osc1 = audioCtx.createOscillator();
                 const osc2 = audioCtx.createOscillator();
                 const filter = audioCtx.createBiquadFilter();
@@ -1216,7 +1360,7 @@
                 osc1.type = 'sawtooth';
                 osc2.type = 'triangle';
                 osc1.frequency.setValueAtTime(freq, now);
-                osc2.frequency.setValueAtTime(freq * 2, now); // Harmônico de oitava
+                osc2.frequency.setValueAtTime(freq * 2, now);
 
                 filter.type = 'lowpass';
                 filter.frequency.setValueAtTime(freq * 6, now);
@@ -1239,7 +1383,6 @@
                 osc1.stop(now + duration);
                 osc2.stop(now + duration);
             } else {
-                // Timbre de Piano Elétrico/Acústico Suave
                 const osc1 = audioCtx.createOscillator();
                 const osc2 = audioCtx.createOscillator();
                 osc1.type = 'triangle';
@@ -1270,7 +1413,6 @@
         function playCurrentChord(mode = 'block') {
             const intervals = getCurrentIntervals();
 
-            // Se o modo global for 'block' ou 'arpeggio', respeita a visualização ativa (se estiver em 'guitar', usa o violão)
             let resolvedMode = mode;
             if (mode === 'block') {
                 resolvedMode = currentState.viewMode === 'guitar' ? 'guitar-block' : 'piano-block';
@@ -1285,7 +1427,6 @@
             if (resolvedMode === 'guitar-block' || resolvedMode === 'guitar-arpeggio') {
                 const shapes = getGuitarShapesForChord(currentState.rootPitch, currentState.qualityId, currentState.bassPitch);
                 const shape = shapes[currentState.guitarVarIndex] || shapes[0];
-                // Em 'guitar-block' faz uma batida rápida natural (18ms entre cordas); em 'guitar-arpeggio' dedilha (75ms)
                 const strummingStep = resolvedMode === 'guitar-block' ? 0.018 : 0.075;
                 let step = 0;
                 shape.frets.forEach((fret, stringIdx) => {
@@ -1310,7 +1451,6 @@
         /**************************************************************
          * 5. CONSTRUÇÃO DO TECLADO / PIANO DE 3 OITAVAS (COM EXTENSÕES)
          **************************************************************/
-        // De C3 (MIDI 48) a B5 (MIDI 83) -> 3 Oitavas Completas (36 teclas)
         const PIANO_START_MIDI = 48; // C3
         const PIANO_END_MIDI = 83;   // B5
 
@@ -1321,11 +1461,9 @@
                 list.push({ midi: bassMidi, isRoot: true, isBass: true, isTension: false, degree: 'Baixo' });
             }
 
-            // C3 = 48, C4 = 60 (Garante sempre múltiplos exatos de oitava a partir de Dó = 0)
             let baseRootMidi = 48 + rootPitch;
             const maxInterval = intervals.length ? Math.max(...intervals) : 7;
 
-            // Usa a oitava central (C4 = 60) quando todas as extensões cabem dentro do teclado (até B5 = 83)
             if ((bassPitch === null || bassPitch === rootPitch) && (60 + rootPitch + maxInterval <= PIANO_END_MIDI)) {
                 baseRootMidi = 60 + rootPitch;
             } else if (bassPitch !== null && bassPitch !== rootPitch && (48 + bassPitch >= baseRootMidi) && (baseRootMidi + 12 + maxInterval <= PIANO_END_MIDI)) {
@@ -1379,7 +1517,6 @@
 
             let svg = `<svg viewBox="0 0 ${totalW} ${keyH}" class="w-full h-auto drop-shadow-md">`;
 
-            // Teclas Brancas
             whiteKeys.forEach(k => {
                 const x = k.whiteIndex * keyW;
                 const active = activeMap.get(k.midi);
@@ -1415,7 +1552,6 @@
                 </g>`;
             });
 
-            // Teclas Pretas
             blackKeys.forEach(k => {
                 const x = (k.prevWhiteIndex + 1) * keyW - (blackW / 2);
                 const active = activeMap.get(k.midi);
@@ -1558,7 +1694,6 @@
                     const pitch = midi % 12;
                     const semitoneFromRoot = (pitch - currentState.rootPitch + 12) % 12;
 
-                    // Identifica se esta nota corresponde a uma extensão (6, 9, 11, 13, b5, #5)
                     const matchingInterval = intervals.find(i => (i % 12) === semitoneFromRoot);
                     const info = matchingInterval !== undefined ? INTERVAL_INFO[matchingInterval] : null;
                     const isTension = info ? info.isTension : false;
@@ -1649,7 +1784,6 @@
             const noteArray = currentState.preferFlat ? NOTES_FLAT : NOTES_SHARP;
             const activeIntervals = getCurrentIntervals();
 
-            // 1. Botões de Nota Raiz
             const rootContainer = document.getElementById('root-buttons');
             rootContainer.innerHTML = noteArray.map((note, pitch) => {
                 const active = pitch === currentState.rootPitch;
@@ -1664,7 +1798,6 @@
                 </button>`;
             }).join('');
 
-            // 1.5 Abas de Categoria de Qualidades
             const catContainer = document.getElementById('category-tabs');
             catContainer.innerHTML = CATEGORIES.map(cat => {
                 const active = cat.id === currentState.activeCategory;
@@ -1677,7 +1810,6 @@
                 </button>`;
             }).join('');
 
-            // 2. Botões de Qualidade filtrados por categoria
             const qualityContainer = document.getElementById('quality-buttons');
             const filteredQualities = currentState.activeCategory === 'all'
                 ? CHORD_QUALITIES
@@ -1696,7 +1828,6 @@
                 </button>`;
             }).join('');
 
-            // 2.5 Construtor Modular de Tensões (Toggles de 6, 7, 7M, 9, b9, #9, 11, #11, 13, b13)
             const tensionContainer = document.getElementById('tension-toggles');
             tensionContainer.innerHTML = MODULAR_TENSIONS.map(t => {
                 const isOn = activeIntervals.includes(t.semitone);
@@ -1711,7 +1842,6 @@
                 </button>`;
             }).join('');
 
-            // 3. Seletor de Baixo (Slash Chord)
             const bassSelect = document.getElementById('bass-select');
             let bassOptions = `<option value="">Sem inversão (Tônica no baixo)</option>`;
             noteArray.forEach((note, pitch) => {
@@ -1833,10 +1963,8 @@
             const set = new Set(currentState.customIntervals);
             if (set.has(semitone)) {
                 set.delete(semitone);
-                // Se removeu b5 ou #5, restaura a 5ª justa
                 if (semitone === 6 || semitone === 8) set.add(7);
             } else {
-                // Exclusividade mútua inteligente entre alterações do mesmo grau
                 if (semitone === 6) { set.delete(7); set.delete(8); }
                 if (semitone === 8) { set.delete(7); set.delete(6); }
                 if (semitone === 10) set.delete(11);
@@ -1946,7 +2074,6 @@
             renderTheoryPanel();
         }
 
-        // Listener de digitação em tempo real no campo de cifra
         document.getElementById('chord-input').addEventListener('input', (e) => {
             const val = e.target.value;
             const parsed = parseChordString(val);
@@ -1964,7 +2091,6 @@
             }
         });
 
-        // Inicialização ao carregar a página
         window.onload = function() {
             updateAll(true);
         };
